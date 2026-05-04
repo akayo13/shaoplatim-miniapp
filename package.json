@@ -4,7 +4,6 @@
   "private": true,
   "description": "Telegram Mini App and admin panel for ЩаОплатим.",
   "scripts": {
-    "start": "node server.js",
     "local": "node server.js",
     "check": "node --check server.js && node --check public/app.js && node --check public/admin.js && node --check api/orders.js && node --check api/orders/[id].js && node --check api/telegram-webhook.js && node --check api/health.js && node --check scripts/set-telegram-menu.js && node --check scripts/set-telegram-webhook.js",
     "telegram:menu": "node scripts/set-telegram-menu.js",
