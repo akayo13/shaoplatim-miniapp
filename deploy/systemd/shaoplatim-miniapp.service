@@ -1,0 +1,14 @@
+[Unit]
+Description=ЩаОплатим Telegram Mini App
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/shaoplatim-miniapp
+ExecStart=/usr/bin/node /opt/shaoplatim-miniapp/server.js
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

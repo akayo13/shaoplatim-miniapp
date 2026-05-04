@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#050607" />
+    <title>ЩаОплатим · Админка</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="admin-shell">
+      <header class="admin-hero">
+        <div class="brand">
+          <img class="brand__logo" src="./assets/logo-channel.png" alt="ЩаОплатим" />
+          <div>
+            <p class="brand__name">ЩаОплатим</p>
+            <p class="brand__caption">Панель заявок</p>
+          </div>
+        </div>
+        <a class="admin-link" href="./index.html">Mini App</a>
+      </header>
+
+      <section class="admin-summary" id="adminSummary">
+        <article>
+          <span>Всего</span>
+          <strong>0</strong>
+        </article>
+        <article>
+          <span>Активные</span>
+          <strong>0</strong>
+        </article>
+        <article>
+          <span>Готово</span>
+          <strong>0</strong>
+        </article>
+      </section>
+
+      <section class="admin-toolbar">
+        <label class="field admin-filter">
+          <span>Фильтр</span>
+          <select id="statusFilter">
+            <option value="all">Все заявки</option>
+            <option value="new">Новые</option>
+            <option value="pricing">Расчет</option>
+            <option value="waiting_payment">Ожидает оплаты</option>
+            <option value="processing">В работе</option>
+            <option value="done">Готово</option>
+            <option value="declined">Отклонено</option>
+          </select>
+        </label>
+        <button class="ghost-button" id="refreshButton" type="button">Обновить</button>
+      </section>
+
+      <section class="admin-orders" id="adminOrders"></section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="./admin.js"></script>
+  </body>
+</html>
