@@ -11,6 +11,7 @@ const services = [
     note: "Продление подписки или новый аккаунт",
     icon: "AI",
     quote: "от 2 450 ₽",
+    tone: "ai",
   },
   {
     name: "Spotify",
@@ -18,6 +19,7 @@ const services = [
     note: "Индивидуальный или семейный тариф",
     icon: "SP",
     quote: "от 690 ₽",
+    tone: "music",
   },
   {
     name: "Netflix",
@@ -25,6 +27,7 @@ const services = [
     note: "Оплата профиля или подарочная карта",
     icon: "NF",
     quote: "от 1 150 ₽",
+    tone: "cinema",
   },
   {
     name: "Apple",
@@ -32,6 +35,7 @@ const services = [
     note: "Пополнение баланса Apple ID",
     icon: "AP",
     quote: "по расчету",
+    tone: "apple",
   },
   {
     name: "Google",
@@ -39,6 +43,7 @@ const services = [
     note: "Подписки и цифровые покупки",
     icon: "G",
     quote: "по расчету",
+    tone: "google",
   },
   {
     name: "Canva",
@@ -46,6 +51,7 @@ const services = [
     note: "Продление рабочих аккаунтов",
     icon: "CV",
     quote: "от 1 290 ₽",
+    tone: "design",
   },
 ];
 
@@ -102,10 +108,12 @@ function renderServices() {
   serviceGrid.innerHTML = services
     .map(
       (service) => `
-        <button class="service-card" type="button" data-service="${service.name}" data-plan="${service.plan}" data-quote="${service.quote}">
+        <button class="service-card service-card--${service.tone}" type="button" data-service="${service.name}" data-plan="${service.plan}" data-quote="${service.quote}">
           <span class="service-card__icon">${service.icon}</span>
+          <span class="service-card__quote">${service.quote}</span>
           <h3>${service.name}</h3>
           <p>${service.note}</p>
+          <span class="service-card__plan">${service.plan}</span>
         </button>
       `,
     )
@@ -117,7 +125,7 @@ function renderHistory() {
   timeline.innerHTML = historyItems
     .map(
       (item) => `
-        <article class="timeline-item">
+        <article class="timeline-item ${getTimelineTone(item.meta)}">
           <span class="timeline-dot" aria-hidden="true"></span>
           <div>
             <h3>${item.title}</h3>
@@ -127,6 +135,12 @@ function renderHistory() {
       `,
     )
     .join("");
+}
+
+function getTimelineTone(meta) {
+  if (/готово|завершено|оплачено/i.test(meta)) return "timeline-item--done";
+  if (/ожидает|расчет|новая/i.test(meta)) return "timeline-item--pending";
+  return "timeline-item--active";
 }
 
 async function loadOrders() {

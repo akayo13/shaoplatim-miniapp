@@ -7,6 +7,15 @@ const statusLabels = {
   declined: "Отклонено",
 };
 
+const statusTone = {
+  new: "status-pill--new",
+  pricing: "status-pill--pricing",
+  waiting_payment: "status-pill--waiting",
+  processing: "status-pill--processing",
+  done: "status-pill--done",
+  declined: "status-pill--declined",
+};
+
 let orders = [];
 let stats = null;
 
@@ -75,7 +84,7 @@ function renderOrderCard(order) {
     <article class="admin-order" data-order-id="${order.id}">
       <div class="admin-order__head">
         <div>
-          <span class="status-pill">${statusLabels[order.status] || "Статус"}</span>
+          <span class="status-pill ${statusTone[order.status] || ""}">${statusLabels[order.status] || "Статус"}</span>
           <h2>${escapeHtml(order.service)}</h2>
           <p>${escapeHtml(order.plan)} · ${escapeHtml(order.quote || "по расчету")}</p>
         </div>
