@@ -4,13 +4,27 @@ async function notifyAdmin(order) {
   const chatId = process.env.ADMIN_CHAT_ID;
   if (!process.env.BOT_TOKEN || !chatId) return;
 
-  await telegramRequest("sendMessage", {
-    chat_id: chatId,
+  const payload = {
     text: buildOrderMessage(order),
     parse_mode: "HTML",
     disable_web_page_preview: true,
     reply_markup: buildStatusKeyboard(order.id),
-  });
+  };
+
+  try {
+    await telegramRequest("sendMessage", {
+      ...payload,
+      chat_id: chatId,
+    });
+  } catch (error) {
+    const migratedChatId = error.telegram?.parameters?.migrate_to_chat_id;
+    if (!migratedChatId) throw error;
+
+    await telegramRequest("sendMessage", {
+      ...payload,
+      chat_id: migratedChatId,
+    });
+  }
 }
 
 async function editOrderMessage(message, order) {
@@ -46,7 +60,9 @@ async function telegramRequest(method, payload) {
 
   const data = await response.json();
   if (!data.ok) {
-    throw new Error(data.description || `Telegram ${method} failed`);
+    const error = new Error(data.description || `Telegram ${method} failed`);
+    error.telegram = data;
+    throw error;
   }
 
   return data;
