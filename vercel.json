@@ -1,0 +1,63 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/health.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/orders.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/orders/[id].js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/telegram-webhook.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/health",
+      "dest": "/api/health.js"
+    },
+    {
+      "src": "/api/orders",
+      "dest": "/api/orders.js"
+    },
+    {
+      "src": "/api/orders/([^/]+)",
+      "dest": "/api/orders/[id].js?id=$1"
+    },
+    {
+      "src": "/api/telegram-webhook",
+      "dest": "/api/telegram-webhook.js"
+    },
+    {
+      "src": "/admin.html",
+      "dest": "/public/admin.html"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/public/assets/$1"
+    },
+    {
+      "src": "/(.*\\.(?:css|js|png|jpg|jpeg|svg|webp|ico))",
+      "dest": "/public/$1"
+    },
+    {
+      "src": "/",
+      "dest": "/public/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/index.html"
+    }
+  ]
+}
