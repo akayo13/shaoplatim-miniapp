@@ -1,4 +1,5 @@
 const { createOrder, listOrders } = require("./_lib/db");
+const { requireAdmin } = require("./_lib/auth");
 const { methodNotAllowed, readJsonBody, sendJson } = require("./_lib/http");
 const {
   buildStats,
@@ -10,6 +11,15 @@ const { notifyAdmin } = require("./_lib/telegram");
 module.exports = async function handler(req, res) {
   try {
     if (req.method === "GET") {
+      const admin = requireAdmin(req);
+      if (!admin.ok) {
+        sendJson(res, admin.status, {
+          error: admin.error,
+          userId: admin.userId,
+        });
+        return;
+      }
+
       const orders = await listOrders();
       sendJson(res, 200, { orders, stats: buildStats(orders) });
       return;

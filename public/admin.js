@@ -18,17 +18,31 @@ const statusTone = {
 
 let orders = [];
 let stats = null;
+let adminAccess = null;
 
 const adminOrders = document.querySelector("#adminOrders");
 const adminSummary = document.querySelector("#adminSummary");
 const statusFilter = document.querySelector("#statusFilter");
 const refreshButton = document.querySelector("#refreshButton");
 const toast = document.querySelector("#toast");
+const tg = window.Telegram?.WebApp;
+
+if (tg) {
+  tg.ready();
+  tg.expand();
+}
+
+persistAdminKey();
 
 async function loadAdminOrders() {
   try {
-    const response = await fetch("/api/orders");
-    if (!response.ok) throw new Error("Не удалось загрузить заявки");
+    const response = await fetch("/api/orders", {
+      headers: getAdminHeaders(),
+    });
+    if (!response.ok) {
+      await handleAdminError(response);
+      return;
+    }
 
     const data = await response.json();
     orders = data.orders;
@@ -38,6 +52,40 @@ async function loadAdminOrders() {
   } catch (error) {
     showToast(error.message);
   }
+}
+
+function getAdminHeaders() {
+  return {
+    "X-Telegram-Init-Data": tg?.initData || "",
+    "X-Admin-Key": localStorage.getItem("shaoplatim_admin_key") || "",
+  };
+}
+
+function persistAdminKey() {
+  const url = new URL(window.location.href);
+  const adminKey = url.searchParams.get("admin_key");
+  if (!adminKey) return;
+
+  localStorage.setItem("shaoplatim_admin_key", adminKey);
+  url.searchParams.delete("admin_key");
+  window.history.replaceState({}, "", url.toString());
+}
+
+async function handleAdminError(response) {
+  const data = await response.json().catch(() => ({}));
+  adminAccess = data;
+  renderLockedState(data.error || "Нет доступа к админке", data.userId);
+}
+
+function renderLockedState(message, userId) {
+  adminSummary.innerHTML = "";
+  adminOrders.innerHTML = `
+    <article class="admin-empty admin-empty--locked">
+      <h2>${escapeHtml(message)}</h2>
+      <p>Откройте эту страницу по кнопке из админ-чата.</p>
+      ${userId ? `<p class="admin-empty__code">Ваш Telegram ID: <code>${escapeHtml(userId)}</code></p>` : ""}
+    </article>
+  `;
 }
 
 function renderSummary() {
@@ -133,7 +181,10 @@ async function saveOrder(card) {
   try {
     const response = await fetch(`/api/orders/${id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...getAdminHeaders(),
+      },
       body: JSON.stringify({ status, managerComment }),
     });
 

@@ -32,9 +32,14 @@ Environment Variables в Vercel:
 DATABASE_URL=...
 BOT_TOKEN=...
 ADMIN_CHAT_ID=...
+ADMIN_PANEL_KEY=...
+ADMIN_TELEGRAM_IDS=...
 PUBLIC_APP_URL=https://your-vercel-domain.vercel.app
 TELEGRAM_MENU_TEXT=Открыть ЩаОплатим
 ```
+
+`ADMIN_PANEL_KEY` используется для защищенной ссылки на админку из админ-чата.
+`ADMIN_TELEGRAM_IDS` можно заполнить через запятую, если админка открывается как Telegram Web App и доступ нужно ограничить по Telegram ID.
 
 ### 3. Deploy
 
@@ -58,6 +63,26 @@ npm run telegram:menu
 ```
 
 Webhook нужен для кнопок статусов в Telegram. Menu button нужен, чтобы пользователь открывал Mini App из бота.
+
+### 5. Канал проекта
+
+Чтобы пользователи открывали Mini App из канала:
+
+1. Добавить бота админом канала.
+2. В `.env` указать:
+
+```bash
+CHANNEL_ID=@your_channel_username
+MINI_APP_LINK=https://t.me/your_bot/your_app
+```
+
+`MINI_APP_LINK` лучше сделать в BotFather через Web Apps short name. Если short name еще не настроен, временно можно использовать `PUBLIC_APP_URL`.
+
+Отправить пост с кнопкой:
+
+```bash
+npm run telegram:channel-post
+```
 
 ## VPS
 
@@ -87,6 +112,8 @@ PUBLIC_APP_URL=https://your-domain.com
 DATABASE_URL=
 BOT_TOKEN=...
 ADMIN_CHAT_ID=...
+ADMIN_PANEL_KEY=...
+ADMIN_TELEGRAM_IDS=...
 TELEGRAM_MENU_TEXT=Открыть ЩаОплатим
 ```
 

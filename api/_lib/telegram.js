@@ -86,21 +86,42 @@ function buildOrderMessage(order) {
 }
 
 function buildStatusKeyboard(orderId) {
-  return {
-    inline_keyboard: [
-      [
-        { text: "Расчет", callback_data: `status:${orderId}:pricing` },
-        { text: "Ожидает оплаты", callback_data: `status:${orderId}:waiting_payment` },
-      ],
-      [
-        { text: "В работе", callback_data: `status:${orderId}:processing` },
-        { text: "Готово", callback_data: `status:${orderId}:done` },
-      ],
-      [
-        { text: "Отклонено", callback_data: `status:${orderId}:declined` },
-      ],
+  const keyboard = [
+    [
+      { text: "Расчет", callback_data: `status:${orderId}:pricing` },
+      { text: "Ожидает оплаты", callback_data: `status:${orderId}:waiting_payment` },
     ],
+    [
+      { text: "В работе", callback_data: `status:${orderId}:processing` },
+      { text: "Готово", callback_data: `status:${orderId}:done` },
+    ],
+    [
+      { text: "Отклонено", callback_data: `status:${orderId}:declined` },
+    ],
+  ];
+  const adminUrl = buildAdminUrl();
+
+  if (adminUrl) {
+    keyboard.push([{ text: "Открыть админку", url: adminUrl }]);
+  }
+
+  return {
+    inline_keyboard: keyboard,
   };
+}
+
+function buildAdminUrl() {
+  if (!process.env.PUBLIC_APP_URL) return "";
+
+  try {
+    const url = new URL("/admin.html", process.env.PUBLIC_APP_URL);
+    if (process.env.ADMIN_PANEL_KEY) {
+      url.searchParams.set("admin_key", process.env.ADMIN_PANEL_KEY);
+    }
+    return url.toString();
+  } catch {
+    return "";
+  }
 }
 
 function formatCustomer(customer = {}) {
