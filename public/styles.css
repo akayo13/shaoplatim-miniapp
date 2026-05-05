@@ -475,6 +475,12 @@ button {
   object-fit: contain;
 }
 
+.service-card--ai .service-card__icon img,
+.service-card--apple .service-card__icon img {
+  width: 32px;
+  height: 32px;
+}
+
 .service-card__quote {
   position: absolute;
   top: 16px;
