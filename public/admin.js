@@ -58,6 +58,7 @@ function getAdminHeaders() {
   return {
     "X-Telegram-Init-Data": tg?.initData || "",
     "X-Admin-Key": localStorage.getItem("shaoplatim_admin_key") || "",
+    "X-Admin-Password": sessionStorage.getItem("shaoplatim_admin_password") || "",
   };
 }
 
@@ -74,7 +75,33 @@ function persistAdminKey() {
 async function handleAdminError(response) {
   const data = await response.json().catch(() => ({}));
   adminAccess = data;
+  if (data.passwordRequired) {
+    renderPasswordGate(data.error || "Введите пароль админки");
+    return;
+  }
+
   renderLockedState(data.error || "Нет доступа к админке", data.userId);
+}
+
+function renderPasswordGate(message = "") {
+  adminSummary.innerHTML = "";
+  adminOrders.innerHTML = `
+    <form class="admin-empty admin-password" data-password-form>
+      <h2>Вход в админку</h2>
+      <p>${escapeHtml(message)}</p>
+      <label class="field">
+        <span>Пароль</span>
+        <input type="password" name="password" placeholder="Введите пароль" autocomplete="current-password" required />
+      </label>
+      <button class="primary-button primary-button--wide" type="submit">Войти</button>
+    </form>
+  `;
+}
+
+async function submitPassword(form) {
+  const password = new FormData(form).get("password");
+  sessionStorage.setItem("shaoplatim_admin_password", password);
+  await loadAdminOrders();
 }
 
 function renderLockedState(message, userId) {
@@ -230,6 +257,14 @@ adminOrders.addEventListener("click", (event) => {
 
   const card = event.target.closest("[data-order-id]");
   if (card) saveOrder(card);
+});
+
+adminOrders.addEventListener("submit", (event) => {
+  const form = event.target.closest("[data-password-form]");
+  if (!form) return;
+
+  event.preventDefault();
+  submitPassword(form);
 });
 
 statusFilter.addEventListener("change", renderOrders);

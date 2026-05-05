@@ -2,7 +2,7 @@ const crypto = require("node:crypto");
 
 function requireAdmin(req) {
   const keyAuth = verifyAdminKey(req);
-  if (keyAuth.ok) return keyAuth;
+  if (keyAuth.ok) return requireAdminPassword(req, keyAuth);
 
   const initData = req.headers["x-telegram-init-data"];
   if (!initData) {
@@ -43,10 +43,36 @@ function requireAdmin(req) {
     };
   }
 
-  return {
+  return requireAdminPassword(req, {
     ok: true,
     user: verified.user,
-  };
+  });
+}
+
+function requireAdminPassword(req, authResult) {
+  const expectedPassword = process.env.ADMIN_PANEL_PASSWORD;
+  if (!expectedPassword) return authResult;
+
+  const providedPassword = req.headers["x-admin-password"];
+  if (!providedPassword) {
+    return {
+      ok: false,
+      status: 401,
+      error: "Введите пароль админки",
+      passwordRequired: true,
+    };
+  }
+
+  if (!safeEqual(String(providedPassword), String(expectedPassword))) {
+    return {
+      ok: false,
+      status: 403,
+      error: "Неверный пароль админки",
+      passwordRequired: true,
+    };
+  }
+
+  return authResult;
 }
 
 function verifyAdminKey(req) {

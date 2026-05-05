@@ -16,6 +16,7 @@ module.exports = async function handler(req, res) {
         sendJson(res, admin.status, {
           error: admin.error,
           userId: admin.userId,
+          passwordRequired: admin.passwordRequired || false,
         });
         return;
       }

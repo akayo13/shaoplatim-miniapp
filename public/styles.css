@@ -954,6 +954,13 @@ button {
   font-weight: 900;
 }
 
+.admin-password {
+  width: min(100%, 440px);
+  margin: 28px auto 0;
+  display: grid;
+  gap: 16px;
+}
+
 .admin-order {
   display: grid;
   gap: 16px;
