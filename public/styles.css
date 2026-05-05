@@ -389,7 +389,8 @@ button {
   border-radius: var(--radius);
   color: var(--ink);
   background:
-    radial-gradient(circle at 84% 88%, var(--service-glow, rgba(22, 140, 255, 0.12)), transparent 34%),
+    radial-gradient(circle at 92% 86%, var(--service-glow, rgba(22, 140, 255, 0.12)), transparent 38%),
+    radial-gradient(circle at 12% 4%, var(--service-glow-soft, rgba(255, 255, 255, 0.04)), transparent 34%),
     linear-gradient(155deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.04));
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.16),
@@ -399,39 +400,45 @@ button {
 }
 
 .service-card--ai {
-  --service-accent: #168cff;
-  --service-accent-2: #0057ff;
-  --service-glow: rgba(22, 140, 255, 0.16);
+  --service-accent: #d9fff4;
+  --service-accent-2: #12a384;
+  --service-glow: rgba(16, 163, 127, 0.24);
+  --service-glow-soft: rgba(255, 255, 255, 0.07);
 }
 
 .service-card--music {
-  --service-accent: #1fb6ff;
-  --service-accent-2: #0b66ff;
-  --service-glow: rgba(31, 182, 255, 0.14);
+  --service-accent: #1ed760;
+  --service-accent-2: #0a8f3e;
+  --service-glow: rgba(30, 215, 96, 0.24);
+  --service-glow-soft: rgba(30, 215, 96, 0.08);
 }
 
 .service-card--cinema {
-  --service-accent: #4a8dff;
-  --service-accent-2: #2340ff;
-  --service-glow: rgba(74, 141, 255, 0.14);
+  --service-accent: #ff2330;
+  --service-accent-2: #9b0610;
+  --service-glow: rgba(229, 9, 20, 0.23);
+  --service-glow-soft: rgba(255, 35, 48, 0.08);
 }
 
 .service-card--apple {
-  --service-accent: #7dc7ff;
-  --service-accent-2: #1873ff;
-  --service-glow: rgba(125, 199, 255, 0.13);
+  --service-accent: #f9fbff;
+  --service-accent-2: #8ebcff;
+  --service-glow: rgba(185, 215, 255, 0.18);
+  --service-glow-soft: rgba(255, 255, 255, 0.08);
 }
 
 .service-card--google {
-  --service-accent: #3aa0ff;
-  --service-accent-2: #0064d8;
-  --service-glow: rgba(58, 160, 255, 0.13);
+  --service-accent: #4285f4;
+  --service-accent-2: #fbbc05;
+  --service-glow: rgba(66, 133, 244, 0.18);
+  --service-glow-soft: rgba(251, 188, 5, 0.08);
 }
 
 .service-card--design {
-  --service-accent: #39d1ff;
-  --service-accent-2: #006dff;
-  --service-glow: rgba(57, 209, 255, 0.13);
+  --service-accent: #00c4cc;
+  --service-accent-2: #7d2ae8;
+  --service-glow: rgba(125, 42, 232, 0.2);
+  --service-glow-soft: rgba(0, 196, 204, 0.1);
 }
 
 .service-card::after {
@@ -446,16 +453,26 @@ button {
   width: 48px;
   height: 48px;
   margin-bottom: 16px;
-  border: 1px solid rgba(159, 207, 255, 0.34);
-  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 19px;
   color: #f7fbff;
-  background: linear-gradient(145deg, var(--service-accent, var(--accent)), var(--service-accent-2, var(--accent-2)));
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04)),
+    radial-gradient(circle at 70% 72%, var(--service-glow), transparent 70%),
+    rgba(7, 9, 12, 0.56);
   font-size: 17px;
   font-weight: 950;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.36),
-    inset 0 -12px 20px rgba(0, 31, 115, 0.28),
-    0 0 22px rgba(22, 140, 255, 0.26);
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -12px 20px rgba(0, 0, 0, 0.22),
+    0 0 24px var(--service-glow);
+}
+
+.service-card__icon img {
+  display: block;
+  width: 31px;
+  height: 31px;
+  object-fit: contain;
 }
 
 .service-card__quote {

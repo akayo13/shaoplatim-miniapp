@@ -10,6 +10,7 @@ const services = [
     plan: "Plus / Team",
     note: "Продление подписки или новый аккаунт",
     icon: "AI",
+    logo: "./assets/services/chatgpt.svg",
     quote: "от 2 450 ₽",
     tone: "ai",
   },
@@ -18,6 +19,7 @@ const services = [
     plan: "Premium",
     note: "Индивидуальный или семейный тариф",
     icon: "SP",
+    logo: "./assets/services/spotify.svg",
     quote: "от 690 ₽",
     tone: "music",
   },
@@ -26,6 +28,7 @@ const services = [
     plan: "Basic / Standard",
     note: "Оплата профиля или подарочная карта",
     icon: "NF",
+    logo: "./assets/services/netflix.svg",
     quote: "от 1 150 ₽",
     tone: "cinema",
   },
@@ -34,6 +37,7 @@ const services = [
     plan: "iCloud / Gift Card",
     note: "Пополнение баланса Apple ID",
     icon: "AP",
+    logo: "./assets/services/apple.svg",
     quote: "по расчету",
     tone: "apple",
   },
@@ -42,6 +46,7 @@ const services = [
     plan: "One / Play",
     note: "Подписки и цифровые покупки",
     icon: "G",
+    logo: "./assets/services/google.svg",
     quote: "по расчету",
     tone: "google",
   },
@@ -50,6 +55,7 @@ const services = [
     plan: "Pro",
     note: "Продление рабочих аккаунтов",
     icon: "CV",
+    logo: "./assets/services/canva.svg",
     quote: "от 1 290 ₽",
     tone: "design",
   },
@@ -109,7 +115,9 @@ function renderServices() {
     .map(
       (service) => `
         <button class="service-card service-card--${service.tone}" type="button" data-service="${service.name}" data-plan="${service.plan}" data-quote="${service.quote}">
-          <span class="service-card__icon">${service.icon}</span>
+          <span class="service-card__icon">
+            <img src="${service.logo}" alt="" />
+          </span>
           <span class="service-card__quote">${service.quote}</span>
           <h3>${service.name}</h3>
           <p>${service.note}</p>
