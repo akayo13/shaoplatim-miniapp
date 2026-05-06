@@ -1,7 +1,8 @@
 const APP_BRAND = {
   name: "ЩаОплатим",
   logo: "./assets/logo-channel.png",
-  support: "@support",
+  support: "@sokratmanager",
+  supportUrl: "https://t.me/sokratmanager",
 };
 
 const categories = [
@@ -172,6 +173,7 @@ const views = {
   catalog: document.querySelector("#catalogView"),
   order: document.querySelector("#orderView"),
   success: document.querySelector("#successView"),
+  payment: document.querySelector("#paymentView"),
   history: document.querySelector("#historyView"),
   profile: document.querySelector("#profileView"),
 };
@@ -202,7 +204,14 @@ const successOrderService = document.querySelector("#successOrderService");
 const successOrderStatus = document.querySelector("#successOrderStatus");
 const successHistoryButton = document.querySelector("#successHistoryButton");
 const successNewOrderButton = document.querySelector("#successNewOrderButton");
+const paymentOrderId = document.querySelector("#paymentOrderId");
+const paymentService = document.querySelector("#paymentService");
+const paymentAmount = document.querySelector("#paymentAmount");
+const paymentPrimaryButton = document.querySelector("#paymentPrimaryButton");
+const paymentBackButton = document.querySelector("#paymentBackButton");
+const profileSupportButton = document.querySelector("#profileSupportButton");
 let activeCategory = "all";
+let selectedPaymentOrder = null;
 
 function initTelegram() {
   if (!tg) return;
@@ -422,6 +431,13 @@ function renderOrderSuccess(order) {
   successOrderStatus.textContent = statusLabels[order.status] || "Новая заявка";
 }
 
+function renderPaymentDraft(order) {
+  selectedPaymentOrder = order;
+  paymentOrderId.textContent = `#${formatOrderId(order.id)}`;
+  paymentService.textContent = `${order.service} · ${order.plan}`;
+  paymentAmount.textContent = order.amount ? formatMoney(order.amount) : "Сумма появится после расчета";
+}
+
 function getTimelineTone(status) {
   if (status === "done") return "timeline-item--done";
   if (["new", "pricing", "waiting_payment"].includes(status)) return "timeline-item--pending";
@@ -506,6 +522,17 @@ function formatServiceWord(count) {
 
 function formatOrderId(id) {
   return id ? String(id).replace(/^local-/, "").slice(0, 8).toUpperCase() : "НОВЫЙ";
+}
+
+function formatMoney(value) {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return String(value);
+
+  return new Intl.NumberFormat("ru-RU", {
+    style: "currency",
+    currency: "RUB",
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 
 function getInitials(value) {
@@ -692,7 +719,11 @@ document.querySelector("#customServiceButton").addEventListener("click", () => {
 });
 
 document.querySelector("#supportButton").addEventListener("click", () => {
-  showToast(`Напишите в поддержку: ${APP_BRAND.support}`);
+  openSupport();
+});
+
+profileSupportButton.addEventListener("click", () => {
+  openSupport();
 });
 
 popularServiceGrid.addEventListener("click", (event) => {
@@ -722,9 +753,19 @@ timeline.addEventListener("click", (event) => {
 
   const payButton = event.target.closest("[data-action='pay-order']");
   if (payButton) {
-    showToast("Оплата появится здесь после подключения эквайринга.");
+    const order = historyItems.find((item) => item.id === payButton.dataset.orderId);
+    if (!order) return;
+    renderPaymentDraft(order);
+    showView("payment");
   }
 });
+
+paymentPrimaryButton.addEventListener("click", () => {
+  if (!selectedPaymentOrder) return;
+  showToast("Эквайринг подключим на следующем этапе.");
+});
+
+paymentBackButton.addEventListener("click", () => showView("history"));
 
 successHistoryButton.addEventListener("click", () => showView("history"));
 
@@ -790,6 +831,15 @@ function validateSelectedService() {
 
 function createLocalOrderId() {
   return window.crypto?.randomUUID?.() || `local-${Date.now()}`;
+}
+
+function openSupport() {
+  if (tg?.openTelegramLink) {
+    tg.openTelegramLink(APP_BRAND.supportUrl);
+    return;
+  }
+
+  window.open(APP_BRAND.supportUrl, "_blank", "noopener");
 }
 
 function escapeHtml(value) {

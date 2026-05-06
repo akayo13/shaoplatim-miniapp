@@ -137,6 +137,36 @@
         </div>
       </section>
 
+      <section class="view" id="paymentView">
+        <div class="payment-card">
+          <span class="order-success__badge">Оплата заказа</span>
+          <h2 id="paymentTitle">Расчет готов</h2>
+          <p id="paymentSubtitle">Проверьте детали перед оплатой.</p>
+          <div class="payment-card__details">
+            <div>
+              <span>Номер заказа</span>
+              <strong id="paymentOrderId">—</strong>
+            </div>
+            <div>
+              <span>Сервис</span>
+              <strong id="paymentService">—</strong>
+            </div>
+            <div>
+              <span>К оплате</span>
+              <strong id="paymentAmount">Сумма появится после расчета</strong>
+            </div>
+          </div>
+          <div class="payment-card__notice">
+            <strong>Онлайн-оплата почти готова</strong>
+            <p>Сюда подключим эквайринг банка. Клиент сможет оплатить заказ прямо внутри сервиса.</p>
+          </div>
+          <div class="order-success__actions">
+            <button class="primary-button" id="paymentPrimaryButton" type="button">Оплатить</button>
+            <button class="ghost-button" id="paymentBackButton" type="button">Вернуться в историю</button>
+          </div>
+        </div>
+      </section>
+
       <section class="view" id="historyView">
         <div class="section-head">
           <h2>История</h2>
@@ -153,6 +183,13 @@
             <p>Заявки, статусы и поддержка в одном месте.</p>
           </div>
         </div>
+        <div class="support-card">
+          <div>
+            <h3>Поддержка</h3>
+            <p>Задайте вопрос по заказу или уточните детали оплаты.</p>
+          </div>
+          <button class="primary-button primary-button--wide" id="profileSupportButton" type="button">Написать в поддержку</button>
+        </div>
         <div class="settings-list">
           <button class="settings-row" type="button">
             <span>Уведомления о статусах</span>
@@ -164,7 +201,7 @@
           </button>
           <button class="settings-row" type="button">
             <span>Поддержка</span>
-            <strong>@support</strong>
+            <strong>@sokratmanager</strong>
           </button>
         </div>
       </section>

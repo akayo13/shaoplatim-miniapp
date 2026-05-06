@@ -16,6 +16,8 @@ const statusTone = {
   declined: "status-pill--declined",
 };
 
+const statusFlow = ["new", "pricing", "waiting_payment", "processing", "done"];
+
 let orders = [];
 let stats = null;
 let adminAccess = null;
@@ -184,6 +186,21 @@ function renderOrderCard(order) {
         <textarea rows="2" data-manager-comment>${escapeHtml(order.managerComment || "")}</textarea>
       </label>
 
+      <div class="admin-status-flow" aria-label="Этапы заказа">
+        ${statusFlow
+          .map(
+            (status) => `
+              <button class="${getFlowButtonClass(order.status, status)}" type="button" data-set-status="${status}">
+                ${statusLabels[status]}
+              </button>
+            `,
+          )
+          .join("")}
+        <button class="${getFlowButtonClass(order.status, "declined")}" type="button" data-set-status="declined">
+          Отклонить
+        </button>
+      </div>
+
       <div class="admin-order__actions">
         <select data-status>
           ${Object.entries(statusLabels)
@@ -198,6 +215,10 @@ function renderOrderCard(order) {
       </div>
     </article>
   `;
+}
+
+function getFlowButtonClass(currentStatus, status) {
+  return `admin-status-button ${currentStatus === status ? "is-active" : ""} ${status === "declined" ? "admin-status-button--danger" : ""}`;
 }
 
 async function saveOrder(card) {
@@ -252,6 +273,18 @@ function escapeHtml(value) {
 }
 
 adminOrders.addEventListener("click", (event) => {
+  const statusButton = event.target.closest("[data-set-status]");
+  if (statusButton) {
+    const card = event.target.closest("[data-order-id]");
+    if (!card) return;
+
+    card.querySelector("[data-status]").value = statusButton.dataset.setStatus;
+    card.querySelectorAll("[data-set-status]").forEach((button) => {
+      button.classList.toggle("is-active", button === statusButton);
+    });
+    return;
+  }
+
   const saveButton = event.target.closest("[data-save]");
   if (!saveButton) return;
 
