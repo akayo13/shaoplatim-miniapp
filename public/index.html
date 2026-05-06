@@ -27,13 +27,10 @@
       </header>
 
       <section class="hero">
-        <img class="hero__banner" src="./assets/logo-banner-cutout.png" alt="ЩаОплатим" />
         <div class="hero__content">
           <h1>Зарубежные подписки в пару касаний</h1>
-          <p>Выберите сервис, отправьте заявку и получите понятный расчет со статусом в Telegram.</p>
           <div class="hero__actions">
             <button class="primary-button" id="startOrderButton" type="button">Оформить заявку</button>
-            <button class="ghost-button" id="showHistoryButton" type="button">Мои оплаты</button>
           </div>
         </div>
       </section>
@@ -59,9 +56,21 @@
           <span class="status-pill">Черновик</span>
         </div>
         <form class="order-form" id="orderForm">
-          <label class="field">
-            <span>Сервис</span>
-            <input id="serviceInput" name="service" type="text" placeholder="Netflix, ChatGPT, Spotify..." autocomplete="off" required />
+          <div class="order-service-picker">
+            <span class="field-title">Выберите сервис</span>
+            <div class="order-service-list" id="orderServiceList"></div>
+          </div>
+          <input id="serviceInput" name="service" type="hidden" required />
+          <div class="selected-service" id="selectedServiceSummary">
+            <span class="selected-service__icon" id="selectedServiceIcon">?</span>
+            <span>
+              <strong id="selectedServiceName">Сервис не выбран</strong>
+              <small id="selectedServicePlan">Выберите вариант выше или нажмите «Другой сервис»</small>
+            </span>
+          </div>
+          <label class="field field--custom-service is-hidden" id="customServiceField">
+            <span>Название сервиса</span>
+            <input id="customServiceInput" type="text" placeholder="Например: Notion, Midjourney, PlayStation..." autocomplete="off" />
           </label>
           <label class="field">
             <span>Тариф или сумма</span>
@@ -98,7 +107,7 @@
 
       <section class="view" id="profileView">
         <div class="profile-card">
-          <img class="profile-card__logo" src="./assets/logo-channel.png" alt="" />
+          <div class="profile-avatar" id="profileAvatar" aria-hidden="true">Г</div>
           <div>
             <h2 id="profileName">Гость</h2>
             <p>Заявки, статусы и поддержка в одном месте.</p>

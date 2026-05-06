@@ -176,9 +176,9 @@ button {
 .hero {
   position: relative;
   display: grid;
-  gap: 16px;
+  gap: 0;
   overflow: hidden;
-  padding: 14px;
+  padding: 26px 18px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-soft);
   color: var(--ink);
@@ -194,33 +194,14 @@ button {
   display: none;
 }
 
-.hero__banner {
-  position: relative;
-  z-index: 1;
-  display: block;
-  width: 100%;
-  aspect-ratio: 3.05 / 1;
-  object-fit: contain;
-  object-position: center;
-  padding: 10px;
-  border: 1px solid rgba(137, 198, 255, 0.2);
-  border-radius: 26px;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.045)),
-    rgba(6, 9, 13, 0.32);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 -18px 32px rgba(0, 0, 0, 0.16),
-    0 0 28px rgba(22, 140, 255, 0.11),
-    0 18px 38px rgba(0, 0, 0, 0.3);
-}
-
 .hero__content {
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 10px;
-  padding: 0 2px;
+  justify-items: center;
+  gap: 12px;
+  padding: 0;
+  text-align: center;
 }
 
 .hero h1 {
@@ -241,9 +222,14 @@ button {
 
 .hero__actions {
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 2px;
+  margin-top: 6px;
+}
+
+.hero .primary-button {
+  min-width: 226px;
 }
 
 .primary-button,
@@ -382,9 +368,9 @@ button {
 
 .service-card {
   position: relative;
-  min-height: 178px;
+  min-height: 194px;
   overflow: hidden;
-  padding: 16px 16px 42px;
+  padding: 19px 18px 45px;
   border: 1px solid var(--glass-line);
   border-radius: var(--radius);
   color: var(--ink);
@@ -397,6 +383,16 @@ button {
     inset 0 -20px 34px rgba(0, 0, 0, 0.14),
     0 18px 38px rgba(0, 0, 0, 0.25);
   text-align: left;
+}
+
+.service-card.is-selected,
+.order-service-option.is-selected {
+  border-color: rgba(22, 140, 255, 0.58);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -20px 34px rgba(0, 0, 0, 0.14),
+    0 0 0 4px rgba(22, 140, 255, 0.13),
+    0 18px 38px rgba(0, 0, 0, 0.25);
 }
 
 .service-card--ai {
@@ -450,11 +446,11 @@ button {
   z-index: 1;
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
-  margin-bottom: 16px;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 18px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 19px;
+  border-radius: 22px;
   color: #f7fbff;
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04)),
@@ -470,25 +466,15 @@ button {
 
 .service-card__icon img {
   display: block;
-  width: 31px;
-  height: 31px;
+  width: 39px;
+  height: 39px;
   object-fit: contain;
 }
 
 .service-card--ai .service-card__icon img,
 .service-card--apple .service-card__icon img {
-  width: 32px;
-  height: 32px;
-}
-
-.service-card__quote {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 1;
-  color: rgba(231, 243, 255, 0.88);
-  font-size: 11px;
-  font-weight: 900;
+  width: 40px;
+  height: 40px;
 }
 
 .service-card h3,
@@ -500,7 +486,7 @@ button {
 
 .service-card h3 {
   color: #ffffff;
-  font-size: 17px;
+  font-size: 18px;
   line-height: 1.1;
 }
 
@@ -513,8 +499,8 @@ button {
 
 .service-card__plan {
   position: absolute;
-  left: 16px;
-  bottom: 14px;
+  left: 18px;
+  bottom: 16px;
   z-index: 1;
   max-width: calc(100% - 32px);
   overflow: hidden;
@@ -579,6 +565,185 @@ button {
     inset 0 1px 0 rgba(255, 255, 255, 0.16),
     inset 0 -20px 34px rgba(0, 0, 0, 0.14),
     0 18px 38px rgba(0, 0, 0, 0.25);
+}
+
+.order-service-picker {
+  display: grid;
+  gap: 10px;
+}
+
+.field-title {
+  color: rgba(247, 248, 247, 0.66);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.order-service-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.order-service-option {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 70px;
+  overflow: hidden;
+  padding: 10px;
+  border: 1px solid var(--glass-line);
+  border-radius: 22px;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 94% 88%, var(--service-glow, rgba(22, 140, 255, 0.12)), transparent 42%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035));
+  text-align: left;
+}
+
+.order-service-option__icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.04)),
+    radial-gradient(circle at 70% 72%, var(--service-glow), transparent 72%),
+    rgba(7, 9, 12, 0.56);
+  color: var(--accent);
+  font-size: 22px;
+  font-weight: 900;
+  box-shadow: 0 0 20px var(--service-glow, rgba(22, 140, 255, 0.12));
+}
+
+.order-service-option__icon img {
+  display: block;
+  width: 27px;
+  height: 27px;
+  object-fit: contain;
+}
+
+.order-service-option strong,
+.order-service-option small {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+.order-service-option strong {
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-service-option small {
+  margin-top: 4px;
+  overflow: hidden;
+  color: rgba(247, 248, 247, 0.5);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-service-option--custom {
+  --service-glow: rgba(22, 140, 255, 0.18);
+}
+
+.selected-service {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 74px;
+  overflow: hidden;
+  padding: 12px;
+  border: 1px solid rgba(22, 140, 255, 0.24);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 96% 84%, var(--service-glow, rgba(22, 140, 255, 0.13)), transparent 42%),
+    linear-gradient(145deg, rgba(22, 140, 255, 0.12), rgba(255, 255, 255, 0.045));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.13);
+}
+
+.selected-service::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 48%),
+    radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.14), transparent 32%);
+}
+
+.selected-service__icon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 18px;
+  color: var(--accent);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04)),
+    radial-gradient(circle at 70% 72%, var(--service-glow, rgba(22, 140, 255, 0.14)), transparent 72%),
+    rgba(7, 9, 12, 0.56);
+  font-size: 22px;
+  font-weight: 950;
+  box-shadow: 0 0 22px var(--service-glow, rgba(22, 140, 255, 0.14));
+}
+
+.selected-service__icon img {
+  display: block;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.selected-service strong,
+.selected-service small {
+  position: relative;
+  z-index: 1;
+  display: block;
+  min-width: 0;
+}
+
+.selected-service strong {
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selected-service small {
+  margin-top: 5px;
+  overflow: hidden;
+  color: rgba(247, 248, 247, 0.56);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selected-service--custom {
+  --service-glow: rgba(22, 140, 255, 0.18);
+}
+
+.is-hidden {
+  display: none !important;
 }
 
 .field {
@@ -734,12 +899,30 @@ button {
     0 18px 38px rgba(0, 0, 0, 0.28);
 }
 
-.profile-card__logo {
+.profile-avatar {
+  display: grid;
+  place-items: center;
   width: 58px;
   height: 58px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid rgba(22, 140, 255, 0.28);
   border-radius: 50%;
+  color: #ffffff;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.22), transparent 34%),
+    linear-gradient(145deg, rgba(22, 140, 255, 0.58), rgba(3, 44, 115, 0.88));
+  font-size: 23px;
+  font-weight: 950;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 12px 26px rgba(0, 0, 0, 0.38);
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.38);
 }
 
 .profile-card h2,
