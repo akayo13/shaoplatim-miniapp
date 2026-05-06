@@ -47,7 +47,21 @@
           <h2>Популярное</h2>
           <button class="text-button" id="customServiceButton" type="button">Другой сервис</button>
         </div>
-        <div class="service-grid" id="serviceGrid"></div>
+        <div class="service-grid service-grid--popular" id="popularServiceGrid"></div>
+
+        <div class="catalog-tools">
+          <label class="catalog-search">
+            <span>Поиск сервиса</span>
+            <input id="serviceSearchInput" type="search" placeholder="Например: ChatGPT, YouTube, PlayStation" autocomplete="off" />
+          </label>
+          <div class="category-filter" id="categoryFilter" aria-label="Категории сервисов"></div>
+        </div>
+
+        <div class="section-head section-head--compact">
+          <h2>Все сервисы</h2>
+          <span class="muted" id="catalogCount"></span>
+        </div>
+        <div class="service-list" id="serviceList"></div>
       </section>
 
       <section class="view" id="orderView">

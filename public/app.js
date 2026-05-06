@@ -4,6 +4,15 @@ const APP_BRAND = {
   support: "@support",
 };
 
+const categories = [
+  { id: "all", label: "Все" },
+  { id: "ai", label: "AI" },
+  { id: "media", label: "Видео и музыка" },
+  { id: "apple-google", label: "Apple / Google" },
+  { id: "work", label: "Работа" },
+  { id: "games", label: "Игры" },
+];
+
 const services = [
   {
     name: "ChatGPT",
@@ -13,6 +22,7 @@ const services = [
     logo: "./assets/services/chatgpt.png",
     quote: "Расчет после проверки",
     tone: "ai",
+    category: "ai",
     popular: true,
   },
   {
@@ -23,6 +33,7 @@ const services = [
     logo: "./assets/services/spotify.svg",
     quote: "Расчет после проверки",
     tone: "music",
+    category: "media",
     popular: true,
   },
   {
@@ -33,6 +44,7 @@ const services = [
     logo: "./assets/services/netflix.svg",
     quote: "Расчет после проверки",
     tone: "cinema",
+    category: "media",
     popular: true,
   },
   {
@@ -43,6 +55,7 @@ const services = [
     logo: "./assets/services/apple.png",
     quote: "Расчет после проверки",
     tone: "apple",
+    category: "apple-google",
     popular: true,
   },
   {
@@ -53,6 +66,7 @@ const services = [
     logo: "./assets/services/google.svg",
     quote: "Расчет после проверки",
     tone: "google",
+    category: "apple-google",
     popular: true,
   },
   {
@@ -63,7 +77,74 @@ const services = [
     logo: "./assets/services/canva.svg",
     quote: "Расчет после проверки",
     tone: "design",
+    category: "work",
     popular: true,
+  },
+  {
+    name: "YouTube",
+    plan: "Premium / Music",
+    note: "Индивидуальные и семейные подписки",
+    icon: "YT",
+    logo: "./assets/services/youtube.svg",
+    quote: "Расчет после проверки",
+    tone: "video",
+    category: "media",
+    popular: false,
+  },
+  {
+    name: "Adobe",
+    plan: "Creative Cloud",
+    note: "Продление рабочих аккаунтов",
+    icon: "AD",
+    logo: "./assets/services/adobe.svg",
+    quote: "Расчет после проверки",
+    tone: "design",
+    category: "work",
+    popular: false,
+  },
+  {
+    name: "Notion",
+    plan: "Plus / AI",
+    note: "Рабочие пространства и AI-дополнения",
+    icon: "NO",
+    logo: "./assets/services/notion.svg",
+    quote: "Расчет после проверки",
+    tone: "work",
+    category: "work",
+    popular: false,
+  },
+  {
+    name: "Midjourney",
+    plan: "Basic / Standard",
+    note: "Подписки для генерации изображений",
+    icon: "MJ",
+    logo: "./assets/services/midjourney.svg",
+    quote: "Расчет после проверки",
+    tone: "ai",
+    category: "ai",
+    popular: false,
+  },
+  {
+    name: "PlayStation",
+    plan: "PS Plus / Wallet",
+    note: "Пополнение баланса и игровые подписки",
+    icon: "PS",
+    logo: "./assets/services/playstation.svg",
+    quote: "Расчет после проверки",
+    tone: "games",
+    category: "games",
+    popular: false,
+  },
+  {
+    name: "Steam",
+    plan: "Wallet / Gift",
+    note: "Пополнение баланса и цифровые покупки",
+    icon: "ST",
+    logo: "./assets/services/steam.svg",
+    quote: "Расчет после проверки",
+    tone: "games",
+    category: "games",
+    popular: false,
   },
 ];
 
@@ -90,7 +171,11 @@ const views = {
   profile: document.querySelector("#profileView"),
 };
 
-const serviceGrid = document.querySelector("#serviceGrid");
+const popularServiceGrid = document.querySelector("#popularServiceGrid");
+const serviceList = document.querySelector("#serviceList");
+const serviceSearchInput = document.querySelector("#serviceSearchInput");
+const categoryFilter = document.querySelector("#categoryFilter");
+const catalogCount = document.querySelector("#catalogCount");
 const orderServiceList = document.querySelector("#orderServiceList");
 const timeline = document.querySelector("#timeline");
 const toast = document.querySelector("#toast");
@@ -107,6 +192,7 @@ const profileName = document.querySelector("#profileName");
 const profileAvatar = document.querySelector("#profileAvatar");
 const orderForm = document.querySelector("#orderForm");
 const historyCount = document.querySelector("#historyCount");
+let activeCategory = "all";
 
 function initTelegram() {
   if (!tg) return;
@@ -126,13 +212,13 @@ function initTelegram() {
 }
 
 function renderServices() {
-  serviceGrid.innerHTML = services
+  popularServiceGrid.innerHTML = services
     .filter((service) => service.popular)
     .map(
       (service) => `
         <button class="service-card service-card--${service.tone}" type="button" data-service="${service.name}">
           <span class="service-card__icon">
-            <img src="${service.logo}" alt="" />
+            ${renderServiceIcon(service)}
           </span>
           <h3>${service.name}</h3>
           <p>${service.note}</p>
@@ -143,13 +229,62 @@ function renderServices() {
     .join("");
 }
 
+function renderCatalog() {
+  const query = serviceSearchInput.value.trim().toLowerCase();
+  const filteredServices = services.filter((service) => {
+    const matchesCategory = activeCategory === "all" || service.category === activeCategory;
+    const matchesQuery = [service.name, service.plan, service.note].join(" ").toLowerCase().includes(query);
+    return matchesCategory && matchesQuery;
+  });
+
+  catalogCount.textContent = `${filteredServices.length} ${formatServiceWord(filteredServices.length)}`;
+  serviceList.innerHTML = filteredServices.length
+    ? filteredServices.map(renderServiceRow).join("")
+    : `
+      <div class="catalog-empty">
+        <strong>Не нашли сервис?</strong>
+        <p>Оставьте заявку через «Другой сервис», и мы проверим возможность оплаты.</p>
+        <button class="text-button" type="button" data-service="custom">Другой сервис</button>
+      </div>
+    `;
+}
+
+function renderCategoryFilter() {
+  categoryFilter.innerHTML = categories
+    .map(
+      (category) => `
+        <button class="category-chip ${category.id === activeCategory ? "is-active" : ""}" type="button" data-category="${category.id}">
+          ${category.label}
+        </button>
+      `,
+    )
+    .join("");
+}
+
+function renderServiceRow(service) {
+  return `
+    <button class="service-row service-card--${service.tone}" type="button" data-service="${service.name}">
+      <span class="service-row__icon">${renderServiceIcon(service)}</span>
+      <span class="service-row__body">
+        <strong>${service.name}</strong>
+        <small>${service.note}</small>
+      </span>
+      <span class="service-row__plan">${service.plan}</span>
+    </button>
+  `;
+}
+
+function renderServiceIcon(service) {
+  return service.logo ? `<img src="${service.logo}" alt="" />` : `<span>${service.icon}</span>`;
+}
+
 function renderOrderServices() {
   orderServiceList.innerHTML = [
     ...services.map(
       (service) => `
         <button class="order-service-option service-card--${service.tone}" type="button" data-service="${service.name}">
           <span class="order-service-option__icon">
-            <img src="${service.logo}" alt="" />
+            ${renderServiceIcon(service)}
           </span>
           <span>
             <strong>${service.name}</strong>
@@ -254,6 +389,15 @@ function formatOperationWord(count) {
   return "операций";
 }
 
+function formatServiceWord(count) {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+
+  if (mod10 === 1 && mod100 !== 11) return "сервис";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "сервиса";
+  return "сервисов";
+}
+
 function showView(viewName, options = { scroll: true }) {
   Object.entries(views).forEach(([name, view]) => {
     view.classList.toggle("is-active", name === viewName);
@@ -296,7 +440,7 @@ function selectServiceByName(name, options = { openOrder: true }) {
   quoteValue.textContent = service.quote;
   customServiceInput.value = "";
   customServiceField.classList.add("is-hidden");
-  selectedServiceIcon.innerHTML = `<img src="${service.logo}" alt="" />`;
+  selectedServiceIcon.innerHTML = renderServiceIcon(service);
   selectedServiceName.textContent = service.name;
   selectedServicePlan.textContent = service.plan;
   selectedServiceSummary.className = `selected-service service-card--${service.tone} is-selected`;
@@ -405,10 +549,26 @@ document.querySelector("#supportButton").addEventListener("click", () => {
   showToast(`Напишите в поддержку: ${APP_BRAND.support}`);
 });
 
-serviceGrid.addEventListener("click", (event) => {
+popularServiceGrid.addEventListener("click", (event) => {
   const card = event.target.closest(".service-card");
   if (card) selectService(card);
 });
+
+serviceList.addEventListener("click", (event) => {
+  const item = event.target.closest("[data-service]");
+  if (item) selectServiceByName(item.dataset.service);
+});
+
+categoryFilter.addEventListener("click", (event) => {
+  const chip = event.target.closest(".category-chip");
+  if (!chip) return;
+
+  activeCategory = chip.dataset.category;
+  renderCategoryFilter();
+  renderCatalog();
+});
+
+serviceSearchInput.addEventListener("input", renderCatalog);
 
 orderServiceList.addEventListener("click", (event) => {
   const option = event.target.closest(".order-service-option");
@@ -433,6 +593,8 @@ if (tg) {
 
 initTelegram();
 renderServices();
+renderCategoryFilter();
+renderCatalog();
 renderOrderServices();
 if (!tg) renderProfileAvatar();
 loadOrders();
