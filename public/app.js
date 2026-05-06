@@ -20,7 +20,7 @@ const services = [
     note: "Продление подписки или новый аккаунт",
     icon: "AI",
     logo: "./assets/services/chatgpt.png",
-    quote: "Расчет после проверки",
+    quote: "Расчет перед оплатой",
     tone: "ai",
     category: "ai",
     popular: true,
@@ -31,7 +31,7 @@ const services = [
     note: "Индивидуальный или семейный тариф",
     icon: "SP",
     logo: "./assets/services/spotify.svg",
-    quote: "Расчет после проверки",
+    quote: "Расчет перед оплатой",
     tone: "music",
     category: "media",
     popular: true,
@@ -42,7 +42,7 @@ const services = [
     note: "Оплата профиля или подарочная карта",
     icon: "NF",
     logo: "./assets/services/netflix.svg",
-    quote: "Расчет после проверки",
+    quote: "Расчет перед оплатой",
     tone: "cinema",
     category: "media",
     popular: true,
@@ -53,7 +53,7 @@ const services = [
     note: "Пополнение баланса Apple ID",
     icon: "AP",
     logo: "./assets/services/apple.png",
-    quote: "Расчет после проверки",
+    quote: "Расчет перед оплатой",
     tone: "apple",
     category: "apple-google",
     popular: true,
@@ -64,7 +64,7 @@ const services = [
     note: "Подписки и цифровые покупки",
     icon: "G",
     logo: "./assets/services/google.svg",
-    quote: "Расчет после проверки",
+    quote: "Расчет перед оплатой",
     tone: "google",
     category: "apple-google",
     popular: true,
@@ -75,7 +75,7 @@ const services = [
     note: "Продление рабочих аккаунтов",
     icon: "CV",
     logo: "./assets/services/canva.svg",
-    quote: "Расчет после проверки",
+    quote: "Расчет перед оплатой",
     tone: "design",
     category: "work",
     popular: true,
@@ -86,7 +86,7 @@ const services = [
     note: "Индивидуальные и семейные подписки",
     icon: "YT",
     logo: "./assets/services/youtube.svg",
-    quote: "Расчет после проверки",
+    quote: "Расчет перед оплатой",
     tone: "video",
     category: "media",
     popular: false,
@@ -97,7 +97,7 @@ const services = [
     note: "Продление рабочих аккаунтов",
     icon: "AD",
     logo: "./assets/services/adobe.svg",
-    quote: "Расчет после проверки",
+    quote: "Расчет перед оплатой",
     tone: "design",
     category: "work",
     popular: false,
@@ -108,7 +108,7 @@ const services = [
     note: "Рабочие пространства и AI-дополнения",
     icon: "NO",
     logo: "./assets/services/notion.svg",
-    quote: "Расчет после проверки",
+    quote: "Расчет перед оплатой",
     tone: "work",
     category: "work",
     popular: false,
@@ -119,7 +119,7 @@ const services = [
     note: "Подписки для генерации изображений",
     icon: "MJ",
     logo: "./assets/services/midjourney.svg",
-    quote: "Расчет после проверки",
+    quote: "Расчет перед оплатой",
     tone: "ai",
     category: "ai",
     popular: false,
@@ -130,7 +130,7 @@ const services = [
     note: "Пополнение баланса и игровые подписки",
     icon: "PS",
     logo: "./assets/services/playstation.svg",
-    quote: "Расчет после проверки",
+    quote: "Расчет перед оплатой",
     tone: "games",
     category: "games",
     popular: false,
@@ -141,18 +141,14 @@ const services = [
     note: "Пополнение баланса и цифровые покупки",
     icon: "ST",
     logo: "./assets/services/steam.svg",
-    quote: "Расчет после проверки",
+    quote: "Расчет перед оплатой",
     tone: "games",
     category: "games",
     popular: false,
   },
 ];
 
-const historyItems = [
-  { title: "ChatGPT Plus", meta: "В работе · ожидаем код входа" },
-  { title: "Spotify Premium", meta: "Оплачено · 28 апреля" },
-  { title: "Apple Gift Card", meta: "Завершено · 19 апреля" },
-];
+const historyItems = [];
 
 const statusLabels = {
   new: "Новая заявка",
@@ -163,10 +159,19 @@ const statusLabels = {
   declined: "Отклонено",
 };
 
+const statusSteps = [
+  { id: "new", label: "Заявка" },
+  { id: "pricing", label: "Расчет" },
+  { id: "waiting_payment", label: "Оплата" },
+  { id: "processing", label: "В работе" },
+  { id: "done", label: "Готово" },
+];
+
 const tg = window.Telegram?.WebApp;
 const views = {
   catalog: document.querySelector("#catalogView"),
   order: document.querySelector("#orderView"),
+  success: document.querySelector("#successView"),
   history: document.querySelector("#historyView"),
   profile: document.querySelector("#profileView"),
 };
@@ -192,6 +197,11 @@ const profileName = document.querySelector("#profileName");
 const profileAvatar = document.querySelector("#profileAvatar");
 const orderForm = document.querySelector("#orderForm");
 const historyCount = document.querySelector("#historyCount");
+const successOrderId = document.querySelector("#successOrderId");
+const successOrderService = document.querySelector("#successOrderService");
+const successOrderStatus = document.querySelector("#successOrderStatus");
+const successHistoryButton = document.querySelector("#successHistoryButton");
+const successNewOrderButton = document.querySelector("#successNewOrderButton");
 let activeCategory = "all";
 
 function initTelegram() {
@@ -320,52 +330,148 @@ function renderProfileAvatar(user) {
 }
 
 function renderHistory() {
-  historyCount.textContent = `${historyItems.length} ${formatOperationWord(historyItems.length)}`;
-  timeline.innerHTML = historyItems
+  historyCount.textContent = `${historyItems.length} ${formatOrderWord(historyItems.length)}`;
+
+  if (!historyItems.length) {
+    timeline.innerHTML = `
+      <div class="history-empty">
+        <strong>Пока заказов не было</strong>
+        <p>Когда вы оформите первую заявку, ее статус появится здесь.</p>
+        <button class="text-button" type="button" data-action="start-order">Оформить заявку</button>
+      </div>
+    `;
+    return;
+  }
+
+  timeline.innerHTML = historyItems.map(renderHistoryItem).join("");
+}
+
+function renderHistoryItem(item) {
+  const service = getService(item.service);
+  const orderId = formatOrderId(item.id);
+  const status = item.status || "new";
+  const isPaymentReady = status === "waiting_payment";
+
+  return `
+    <article class="order-card ${getTimelineTone(status)}">
+      <div class="order-card__top">
+        <span class="order-card__icon ${service ? `service-card--${service.tone}` : ""}">
+          ${service ? renderServiceIcon(service) : `<span>${getInitials(item.service)}</span>`}
+        </span>
+        <div class="order-card__title">
+          <h3>${escapeHtml(item.service)}</h3>
+          <p>${escapeHtml(item.plan || "Тариф уточняется")}</p>
+        </div>
+        <span class="status-pill ${getStatusPillClass(status)}">${statusLabels[status] || "Статус"}</span>
+      </div>
+
+      <div class="order-card__meta">
+        <div>
+          <span>Номер</span>
+          <strong>#${orderId}</strong>
+        </div>
+        <div>
+          <span>Создан</span>
+          <strong>${formatDate(item.createdAt)}</strong>
+        </div>
+      </div>
+
+      <div class="order-progress" aria-label="Статус заказа">
+        ${renderOrderProgress(status)}
+      </div>
+
+      <div class="order-card__footer">
+        <p>${escapeHtml(getNextStepText(status))}</p>
+        <button class="pay-button" type="button" data-action="pay-order" data-order-id="${escapeHtml(item.id || "")}" ${isPaymentReady ? "" : "disabled"}>
+          ${isPaymentReady ? "Оплатить" : getPaymentButtonLabel(status)}
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+function renderOrderProgress(status) {
+  if (status === "declined") {
+    return `
+      <span class="order-progress__step is-declined">
+        <i></i>
+        Отклонено
+      </span>
+    `;
+  }
+
+  const activeIndex = Math.max(0, statusSteps.findIndex((step) => step.id === status));
+
+  return statusSteps
     .map(
-      (item) => `
-        <article class="timeline-item ${getTimelineTone(item.meta)}">
-          <span class="timeline-dot" aria-hidden="true"></span>
-          <div>
-            <h3>${item.title}</h3>
-            <p>${item.meta}</p>
-          </div>
-        </article>
+      (step, index) => `
+        <span class="order-progress__step ${index <= activeIndex ? "is-active" : ""}">
+          <i></i>
+          ${step.label}
+        </span>
       `,
     )
     .join("");
 }
 
-function getTimelineTone(meta) {
-  if (/готово|завершено|оплачено/i.test(meta)) return "timeline-item--done";
-  if (/ожидает|расчет|новая/i.test(meta)) return "timeline-item--pending";
+function renderOrderSuccess(order) {
+  const orderId = formatOrderId(order.id);
+
+  successOrderId.textContent = `#${orderId}`;
+  successOrderService.textContent = `${order.service} · ${order.plan}`;
+  successOrderStatus.textContent = statusLabels[order.status] || "Новая заявка";
+}
+
+function getTimelineTone(status) {
+  if (status === "done") return "timeline-item--done";
+  if (["new", "pricing", "waiting_payment"].includes(status)) return "timeline-item--pending";
   return "timeline-item--active";
 }
 
 async function loadOrders() {
+  const user = tg?.initDataUnsafe?.user;
+  const query = new URLSearchParams();
+
+  if (user?.id) query.set("customerId", String(user.id));
+  if (user?.username) query.set("username", user.username);
+
+  if (!query.toString()) {
+    historyItems.splice(0, historyItems.length, ...getLocalOrders());
+    renderHistory();
+    return;
+  }
+
   try {
-    const response = await fetch("/api/orders");
+    const response = await fetch(`/api/orders?${query.toString()}`);
     if (!response.ok) throw new Error("Orders request failed");
 
     const data = await response.json();
-    const ownOrders = data.orders.map((order) => ({
-      title: `${order.service} · ${order.plan}`,
-      meta: `${statusLabels[order.status] || "Статус"} · ${formatDate(order.createdAt)}`,
-    }));
+    const ownOrders = data.orders.map(normalizeHistoryOrder);
 
-    historyItems.splice(0, historyItems.length, ...ownOrders, ...getSeedHistory());
+    historyItems.splice(0, historyItems.length, ...ownOrders);
     renderHistory();
   } catch {
+    historyItems.splice(0, historyItems.length, ...getLocalOrders());
     renderHistory();
   }
 }
 
-function getSeedHistory() {
-  return [
-    { title: "ChatGPT Plus", meta: "В работе · ожидаем код входа" },
-    { title: "Spotify Premium", meta: "Оплачено · 28 апреля" },
-    { title: "Apple Gift Card", meta: "Завершено · 19 апреля" },
-  ];
+function getLocalOrders() {
+  return JSON.parse(localStorage.getItem("globalPayOrders") || "[]").map(normalizeHistoryOrder);
+}
+
+function normalizeHistoryOrder(order) {
+  return {
+    id: order.id || createLocalOrderId(),
+    service: order.service || "Другой сервис",
+    plan: order.plan || "Тариф уточняется",
+    quote: order.quote || "Расчет перед оплатой",
+    access: order.access || "Уточнить способ",
+    comment: order.comment || "",
+    status: order.status || "new",
+    createdAt: order.createdAt || new Date().toISOString(),
+    updatedAt: order.updatedAt || order.createdAt || new Date().toISOString(),
+  };
 }
 
 function formatDate(value) {
@@ -380,13 +486,13 @@ function formatDate(value) {
   }).format(date);
 }
 
-function formatOperationWord(count) {
+function formatOrderWord(count) {
   const mod10 = count % 10;
   const mod100 = count % 100;
 
-  if (mod10 === 1 && mod100 !== 11) return "операция";
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "операции";
-  return "операций";
+  if (mod10 === 1 && mod100 !== 11) return "заказ";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "заказа";
+  return "заказов";
 }
 
 function formatServiceWord(count) {
@@ -396,6 +502,42 @@ function formatServiceWord(count) {
   if (mod10 === 1 && mod100 !== 11) return "сервис";
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "сервиса";
   return "сервисов";
+}
+
+function formatOrderId(id) {
+  return id ? String(id).replace(/^local-/, "").slice(0, 8).toUpperCase() : "НОВЫЙ";
+}
+
+function getInitials(value) {
+  return String(value || "?").trim().slice(0, 2).toUpperCase();
+}
+
+function getStatusPillClass(status) {
+  if (status === "waiting_payment") return "status-pill--waiting";
+  if (status === "processing") return "status-pill--processing";
+  if (status === "done") return "status-pill--done";
+  if (status === "declined") return "status-pill--declined";
+  return "status-pill--new";
+}
+
+function getNextStepText(status) {
+  const messages = {
+    new: "Заявка создана. Следующий шаг появится здесь после расчета.",
+    pricing: "Расчет формируется. После подтверждения откроется оплата.",
+    waiting_payment: "Расчет готов. Оплату можно будет выполнить внутри сервиса.",
+    processing: "Оплата принята. Заказ находится в работе.",
+    done: "Заказ выполнен. Детали сохраняются в истории.",
+    declined: "Заказ не может быть выполнен. Можно оформить новую заявку.",
+  };
+
+  return messages[status] || messages.new;
+}
+
+function getPaymentButtonLabel(status) {
+  if (status === "done") return "Оплачено";
+  if (status === "processing") return "В работе";
+  if (status === "declined") return "Недоступно";
+  return "Ожидает расчета";
 }
 
 function showView(viewName, options = { scroll: true }) {
@@ -452,7 +594,7 @@ function selectServiceByName(name, options = { openOrder: true }) {
 function selectCustomService(options = { openOrder: true }) {
   serviceInput.value = "";
   planInput.value = "";
-  quoteValue.textContent = "Расчет после проверки";
+  quoteValue.textContent = "Расчет перед оплатой";
   customServiceField.classList.remove("is-hidden");
   selectedServiceIcon.textContent = "+";
   selectedServiceName.textContent = "Другой сервис";
@@ -518,6 +660,8 @@ async function submitOrder() {
     order.id = data.order.id;
     order.status = data.order.status;
   } catch {
+    order.id = order.id || createLocalOrderId();
+    order.status = "new";
     const saved = JSON.parse(localStorage.getItem("globalPayOrders") || "[]");
     saved.unshift(order);
     localStorage.setItem("globalPayOrders", JSON.stringify(saved));
@@ -527,13 +671,15 @@ async function submitOrder() {
     tg.sendData(JSON.stringify(order));
   }
 
+  order.status = order.status || "new";
+
   historyItems.unshift({
-    title: `${order.service} · ${order.plan}`,
-    meta: "Новая заявка · расчет в чате",
+    ...normalizeHistoryOrder(order),
   });
   renderHistory();
-  showView("history");
-  showToast("Заявка создана. Менеджер уточнит детали в чате.");
+  renderOrderSuccess(order);
+  showView("success");
+  showToast("Заявка создана.");
 }
 
 document.querySelectorAll(".tab").forEach((tab) => {
@@ -569,6 +715,33 @@ categoryFilter.addEventListener("click", (event) => {
 });
 
 serviceSearchInput.addEventListener("input", renderCatalog);
+
+timeline.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-action='start-order']");
+  if (button) showView("order");
+
+  const payButton = event.target.closest("[data-action='pay-order']");
+  if (payButton) {
+    showToast("Оплата появится здесь после подключения эквайринга.");
+  }
+});
+
+successHistoryButton.addEventListener("click", () => showView("history"));
+
+successNewOrderButton.addEventListener("click", () => {
+  orderForm.reset();
+  serviceInput.value = "";
+  customServiceInput.value = "";
+  customServiceInput.setCustomValidity("");
+  customServiceField.classList.add("is-hidden");
+  quoteValue.textContent = "Расчет перед оплатой";
+  selectedServiceIcon.textContent = "?";
+  selectedServiceName.textContent = "Сервис не выбран";
+  selectedServicePlan.textContent = "Выберите вариант выше или нажмите «Другой сервис»";
+  selectedServiceSummary.className = "selected-service";
+  updateSelectedService("");
+  showView("catalog");
+});
 
 orderServiceList.addEventListener("click", (event) => {
   const option = event.target.closest(".order-service-option");
@@ -613,4 +786,17 @@ function validateSelectedService() {
 
   customServiceInput.setCustomValidity("");
   return true;
+}
+
+function createLocalOrderId() {
+  return window.crypto?.randomUUID?.() || `local-${Date.now()}`;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }

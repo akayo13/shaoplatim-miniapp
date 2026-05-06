@@ -22,7 +22,7 @@ async function ensureSchema() {
       plan TEXT NOT NULL,
       access TEXT NOT NULL,
       comment TEXT NOT NULL DEFAULT '',
-      quote TEXT NOT NULL DEFAULT 'Расчет после проверки',
+      quote TEXT NOT NULL DEFAULT 'Расчет перед оплатой',
       status TEXT NOT NULL DEFAULT 'new',
       manager_comment TEXT NOT NULL DEFAULT '',
       customer JSONB NOT NULL DEFAULT '{}'::jsonb,

@@ -1040,9 +1040,363 @@ button {
   line-height: 1.15;
 }
 
+.order-success {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  overflow: hidden;
+  padding: 22px;
+  border: 1px solid rgba(22, 140, 255, 0.22);
+  border-radius: var(--radius-soft);
+  background:
+    radial-gradient(circle at 88% 8%, rgba(22, 140, 255, 0.22), transparent 36%),
+    radial-gradient(circle at 10% 92%, rgba(255, 255, 255, 0.08), transparent 32%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.04));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -22px 40px rgba(0, 0, 0, 0.16),
+    0 22px 48px rgba(0, 0, 0, 0.3);
+}
+
+.order-success::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 44%),
+    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.14), transparent 32%);
+}
+
+.order-success__badge,
+.order-success h2,
+.order-success p,
+.order-success__card,
+.order-success__actions {
+  position: relative;
+  z-index: 1;
+}
+
+.order-success__badge {
+  width: fit-content;
+  padding: 8px 12px;
+  border: 1px solid rgba(103, 230, 178, 0.26);
+  border-radius: var(--radius-pill);
+  color: #8ee8c1;
+  background: rgba(38, 198, 128, 0.1);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.order-success h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 28px;
+  line-height: 1.05;
+}
+
+.order-success p {
+  max-width: 360px;
+  margin: -6px 0 0;
+  color: rgba(247, 248, 247, 0.66);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.order-success__card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035)),
+    rgba(0, 0, 0, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.order-success__card div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.order-success__card span {
+  flex: 0 0 auto;
+  color: rgba(247, 248, 247, 0.5);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.order-success__card strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 14px;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-success__actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
 .timeline {
   display: grid;
   gap: 12px;
+}
+
+.order-card {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  overflow: hidden;
+  padding: 16px;
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-soft);
+  background:
+    radial-gradient(circle at 94% 12%, rgba(22, 140, 255, 0.13), transparent 34%),
+    radial-gradient(circle at 8% 90%, rgba(255, 255, 255, 0.055), transparent 30%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.038));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.13),
+    inset 0 -18px 34px rgba(0, 0, 0, 0.14),
+    0 16px 34px rgba(0, 0, 0, 0.24);
+}
+
+.order-card::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 42%),
+    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.11), transparent 30%);
+}
+
+.order-card__top,
+.order-card__meta,
+.order-progress,
+.order-card__footer {
+  position: relative;
+  z-index: 1;
+}
+
+.order-card__top {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.order-card .status-pill {
+  max-width: 122px;
+  overflow: hidden;
+  padding: 7px 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-card__icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  color: #ffffff;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.04)),
+    radial-gradient(circle at 70% 72%, var(--service-glow, rgba(22, 140, 255, 0.16)), transparent 72%),
+    rgba(7, 9, 12, 0.58);
+  font-size: 14px;
+  font-weight: 950;
+  box-shadow: 0 0 22px var(--service-glow, rgba(22, 140, 255, 0.14));
+}
+
+.order-card__icon img {
+  display: block;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.order-card__title {
+  min-width: 0;
+}
+
+.order-card__title h3,
+.order-card__title p {
+  overflow: hidden;
+  margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-card__title h3 {
+  color: #ffffff;
+  font-size: 17px;
+  line-height: 1.15;
+}
+
+.order-card__title p {
+  margin-top: 4px;
+  color: rgba(247, 248, 247, 0.56);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.order-card__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.order-card__meta div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.order-card__meta span {
+  color: rgba(247, 248, 247, 0.44);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.order-card__meta strong {
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-progress {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.order-progress__step {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: rgba(247, 248, 247, 0.38);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.order-progress__step i {
+  width: 100%;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.order-progress__step.is-active {
+  color: rgba(247, 248, 247, 0.78);
+}
+
+.order-progress__step.is-active i {
+  background: linear-gradient(90deg, rgba(22, 140, 255, 0.95), rgba(120, 194, 255, 0.72));
+  box-shadow: 0 0 16px rgba(22, 140, 255, 0.24);
+}
+
+.order-progress__step.is-declined {
+  grid-column: 1 / -1;
+  justify-items: stretch;
+  color: #ff9aa5;
+  text-align: left;
+}
+
+.order-progress__step.is-declined i {
+  background: rgba(255, 95, 109, 0.7);
+  box-shadow: 0 0 16px rgba(255, 95, 109, 0.22);
+}
+
+.order-card__footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.order-card__footer p {
+  margin: 0;
+  color: rgba(247, 248, 247, 0.62);
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1.35;
+}
+
+.pay-button {
+  min-height: 42px;
+  padding: 0 15px;
+  border: 1px solid rgba(22, 140, 255, 0.28);
+  border-radius: var(--radius-pill);
+  color: #ffffff;
+  background:
+    linear-gradient(145deg, rgba(22, 140, 255, 0.44), rgba(22, 140, 255, 0.14)),
+    rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+  font-weight: 950;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 12px 24px rgba(0, 72, 190, 0.16);
+}
+
+.pay-button:disabled {
+  cursor: default;
+  color: rgba(247, 248, 247, 0.46);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.history-empty {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(circle at 94% 12%, rgba(22, 140, 255, 0.13), transparent 32%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.035));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 14px 28px rgba(0, 0, 0, 0.2);
+}
+
+.history-empty strong {
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.history-empty p {
+  max-width: 300px;
+  margin: 0;
+  color: rgba(247, 248, 247, 0.62);
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .timeline-item {

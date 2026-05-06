@@ -96,7 +96,7 @@
               <option>Дам временный код</option>
               <option>Нужна подарочная карта</option>
               <option>Нужен новый аккаунт</option>
-              <option>Обсудить в чате</option>
+              <option>Уточнить способ</option>
             </select>
           </label>
           <label class="field">
@@ -104,17 +104,43 @@
             <textarea id="commentInput" name="comment" rows="3" placeholder="Страна аккаунта, дедлайн, важные детали"></textarea>
           </label>
           <div class="quote-box">
-            <span>Предварительно</span>
-            <strong id="quoteValue">Расчет после проверки</strong>
+            <span>Следующий шаг</span>
+            <strong id="quoteValue">Расчет перед оплатой</strong>
           </div>
           <button class="primary-button primary-button--wide" type="submit">Отправить заявку</button>
         </form>
       </section>
 
+      <section class="view" id="successView">
+        <div class="order-success">
+          <span class="order-success__badge">Заказ создан</span>
+          <h2>Заявка принята</h2>
+          <p>Заказ добавлен в историю. Дальнейшие шаги и статус будут отображаться внутри сервиса.</p>
+          <div class="order-success__card">
+            <div>
+              <span>Номер заказа</span>
+              <strong id="successOrderId">—</strong>
+            </div>
+            <div>
+              <span>Сервис</span>
+              <strong id="successOrderService">—</strong>
+            </div>
+            <div>
+              <span>Статус</span>
+              <strong id="successOrderStatus">Новая заявка</strong>
+            </div>
+          </div>
+          <div class="order-success__actions">
+            <button class="primary-button" id="successHistoryButton" type="button">Перейти в историю</button>
+            <button class="ghost-button" id="successNewOrderButton" type="button">Новая заявка</button>
+          </div>
+        </div>
+      </section>
+
       <section class="view" id="historyView">
         <div class="section-head">
           <h2>История</h2>
-          <span class="muted" id="historyCount">3 операции</span>
+          <span class="muted" id="historyCount">0 заказов</span>
         </div>
         <div class="timeline" id="timeline"></div>
       </section>

@@ -68,7 +68,13 @@ async function handleApi(req, res, url) {
 
   if (req.method === "GET" && url.pathname === "/api/orders") {
     const orders = readOrders();
-    sendJson(res, 200, { orders, stats: buildStats(orders) });
+    const customerId = url.searchParams.get("customerId")?.trim();
+    const username = normalizeUsername(url.searchParams.get("username"));
+    const filteredOrders = customerId || username
+      ? orders.filter((order) => isOwnOrder(order, { customerId, username }))
+      : orders;
+
+    sendJson(res, 200, { orders: filteredOrders, stats: buildStats(filteredOrders) });
     return;
   }
 
@@ -153,9 +159,9 @@ function createOrder(payload) {
     id: crypto.randomUUID(),
     service: payload.service.trim(),
     plan: payload.plan.trim(),
-    access: payload.access || "Обсудить в чате",
+    access: payload.access || "Уточнить способ",
     comment: payload.comment?.trim() || "",
-    quote: payload.quote || "Расчет после проверки",
+    quote: payload.quote || "Расчет перед оплатой",
     status: "new",
     managerComment: "",
     customer: normalizeCustomer(payload.customer),
@@ -170,6 +176,21 @@ function normalizeCustomer(customer = {}) {
     name: customer.name || "Гость",
     username: customer.username || "",
   };
+}
+
+function isOwnOrder(order, identity) {
+  const customer = order.customer || {};
+  const orderCustomerId = customer.id ? String(customer.id) : "";
+  const orderUsername = normalizeUsername(customer.username);
+
+  if (identity.customerId && orderCustomerId === identity.customerId) return true;
+  if (identity.username && orderUsername === identity.username) return true;
+
+  return false;
+}
+
+function normalizeUsername(value) {
+  return value ? String(value).trim().replace(/^@/, "").toLowerCase() : "";
 }
 
 function validateOrderPayload(payload) {

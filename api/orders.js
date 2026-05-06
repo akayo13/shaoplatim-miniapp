@@ -11,6 +11,17 @@ const { notifyAdmin } = require("./_lib/telegram");
 module.exports = async function handler(req, res) {
   try {
     if (req.method === "GET") {
+      const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
+      const customerId = url.searchParams.get("customerId")?.trim();
+      const username = normalizeUsername(url.searchParams.get("username"));
+
+      if (customerId || username) {
+        const orders = await listOrders();
+        const ownOrders = orders.filter((order) => isOwnOrder(order, { customerId, username }));
+        sendJson(res, 200, { orders: ownOrders });
+        return;
+      }
+
       const admin = requireAdmin(req);
       if (!admin.ok) {
         sendJson(res, admin.status, {
@@ -46,3 +57,18 @@ module.exports = async function handler(req, res) {
     sendJson(res, 500, { error: error.message });
   }
 };
+
+function isOwnOrder(order, identity) {
+  const customer = order.customer || {};
+  const orderCustomerId = customer.id ? String(customer.id) : "";
+  const orderUsername = normalizeUsername(customer.username);
+
+  if (identity.customerId && orderCustomerId === identity.customerId) return true;
+  if (identity.username && orderUsername === identity.username) return true;
+
+  return false;
+}
+
+function normalizeUsername(value) {
+  return value ? String(value).trim().replace(/^@/, "").toLowerCase() : "";
+}
