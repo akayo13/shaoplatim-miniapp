@@ -11,12 +11,14 @@ for (const text of [
   "Полный возврат",
   "Как мы используем данные",
   'name="termsAccepted"',
+  'id="changeServiceButton"',
   '/_vercel/insights/script.js',
 ]) {
   assert(html.includes(text), `Missing trust content: ${text}`);
 }
 
 const app = fs.readFileSync(path.join(__dirname, "../public/app.js"), "utf8");
+assert(app.includes("setServicePickerCollapsed"), "Missing service picker toggle");
 for (const event of ["app_opened", "order_started", "order_submitted", "payment_opened", "support_opened"]) {
   assert(app.includes(`trackEvent("${event}")`), `Missing analytics event: ${event}`);
 }

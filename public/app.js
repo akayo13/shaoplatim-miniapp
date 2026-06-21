@@ -184,6 +184,7 @@ const serviceSearchInput = document.querySelector("#serviceSearchInput");
 const categoryFilter = document.querySelector("#categoryFilter");
 const catalogCount = document.querySelector("#catalogCount");
 const orderServiceList = document.querySelector("#orderServiceList");
+const orderServicePicker = document.querySelector(".order-service-picker");
 const timeline = document.querySelector("#timeline");
 const toast = document.querySelector("#toast");
 const serviceInput = document.querySelector("#serviceInput");
@@ -193,6 +194,7 @@ const selectedServiceSummary = document.querySelector("#selectedServiceSummary")
 const selectedServiceIcon = document.querySelector("#selectedServiceIcon");
 const selectedServiceName = document.querySelector("#selectedServiceName");
 const selectedServicePlan = document.querySelector("#selectedServicePlan");
+const changeServiceButton = document.querySelector("#changeServiceButton");
 const planInput = document.querySelector("#planInput");
 const quoteValue = document.querySelector("#quoteValue");
 const profileName = document.querySelector("#profileName");
@@ -581,6 +583,10 @@ function showView(viewName, options = { scroll: true }) {
     }
   }
 
+  if (viewName === "order" && !serviceInput.value.trim() && customServiceField.classList.contains("is-hidden")) {
+    setServicePickerCollapsed(false);
+  }
+
   if (viewName === "order") trackEvent("order_started");
 
   if (options.scroll) {
@@ -613,6 +619,7 @@ function selectServiceByName(name, options = { openOrder: true }) {
   selectedServicePlan.textContent = service.plan;
   selectedServiceSummary.className = `selected-service service-card--${service.tone} is-selected`;
   updateSelectedService(name);
+  setServicePickerCollapsed(true);
 
   if (options.openOrder) showView("order");
 }
@@ -627,6 +634,7 @@ function selectCustomService(options = { openOrder: true }) {
   selectedServicePlan.textContent = "Укажите название ниже";
   selectedServiceSummary.className = "selected-service selected-service--custom is-selected";
   updateSelectedService("custom");
+  setServicePickerCollapsed(true);
 
   if (options.openOrder) showView("order");
   window.requestAnimationFrame(() => customServiceInput.focus());
@@ -636,6 +644,11 @@ function updateSelectedService(name) {
   document.querySelectorAll("[data-service]").forEach((button) => {
     button.classList.toggle("is-selected", button.dataset.service === name);
   });
+}
+
+function setServicePickerCollapsed(collapsed) {
+  orderServicePicker.classList.toggle("is-collapsed", collapsed);
+  changeServiceButton.hidden = !collapsed;
 }
 
 function selectService(card) {
@@ -726,6 +739,8 @@ profileSupportButton.addEventListener("click", () => {
   openSupport();
 });
 
+changeServiceButton.addEventListener("click", () => setServicePickerCollapsed(false));
+
 orderForm.addEventListener("click", (event) => {
   const button = event.target.closest("[data-open-info]");
   if (!button) return;
@@ -792,6 +807,7 @@ successNewOrderButton.addEventListener("click", () => {
   selectedServicePlan.textContent = "Выберите вариант выше или нажмите «Другой сервис»";
   selectedServiceSummary.className = "selected-service";
   updateSelectedService("");
+  setServicePickerCollapsed(false);
   showView("catalog");
 });
 
