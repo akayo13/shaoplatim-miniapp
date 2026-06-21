@@ -202,16 +202,7 @@ function renderOrderCard(order) {
       </div>
 
       <div class="admin-order__actions">
-        <select data-status>
-          ${Object.entries(statusLabels)
-            .map(
-              ([value, label]) => `
-                <option value="${value}" ${order.status === value ? "selected" : ""}>${label}</option>
-              `,
-            )
-            .join("")}
-        </select>
-        <button class="primary-button" type="button" data-save>Сохранить</button>
+        <button class="primary-button" type="button" data-save>Сохранить комментарий</button>
       </div>
     </article>
   `;
@@ -221,9 +212,8 @@ function getFlowButtonClass(currentStatus, status) {
   return `admin-status-button ${currentStatus === status ? "is-active" : ""} ${status === "declined" ? "admin-status-button--danger" : ""}`;
 }
 
-async function saveOrder(card) {
+async function saveManagerComment(card) {
   const id = card.dataset.orderId;
-  const status = card.querySelector("[data-status]").value;
   const managerComment = card.querySelector("[data-manager-comment]").value;
 
   try {
@@ -233,7 +223,7 @@ async function saveOrder(card) {
         "Content-Type": "application/json",
         ...getAdminHeaders(),
       },
-      body: JSON.stringify({ status, managerComment }),
+      body: JSON.stringify({ managerComment }),
     });
 
     if (!response.ok) throw new Error("Не удалось сохранить заявку");
@@ -242,6 +232,32 @@ async function saveOrder(card) {
     await loadAdminOrders();
   } catch (error) {
     showToast(error.message);
+  }
+}
+
+async function saveStatus(card, status) {
+  if (status === "declined" && !window.confirm("Отклонить эту заявку?")) return;
+
+  const buttons = card.querySelectorAll("[data-set-status]");
+  buttons.forEach((button) => { button.disabled = true; });
+
+  try {
+    const response = await fetch(`/api/orders/${card.dataset.orderId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAdminHeaders(),
+      },
+      body: JSON.stringify({ status }),
+    });
+    if (!response.ok) throw new Error("Не удалось изменить статус");
+
+    showToast(`Статус: ${statusLabels[status]}`);
+    await loadAdminOrders();
+  } catch (error) {
+    showToast(error.message);
+  } finally {
+    buttons.forEach((button) => { button.disabled = false; });
   }
 }
 
@@ -277,11 +293,7 @@ adminOrders.addEventListener("click", (event) => {
   if (statusButton) {
     const card = event.target.closest("[data-order-id]");
     if (!card) return;
-
-    card.querySelector("[data-status]").value = statusButton.dataset.setStatus;
-    card.querySelectorAll("[data-set-status]").forEach((button) => {
-      button.classList.toggle("is-active", button === statusButton);
-    });
+    saveStatus(card, statusButton.dataset.setStatus);
     return;
   }
 
@@ -289,7 +301,7 @@ adminOrders.addEventListener("click", (event) => {
   if (!saveButton) return;
 
   const card = event.target.closest("[data-order-id]");
-  if (card) saveOrder(card);
+  if (card) saveManagerComment(card);
 });
 
 adminOrders.addEventListener("submit", (event) => {

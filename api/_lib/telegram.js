@@ -1,5 +1,12 @@
 const { statuses } = require("./statuses");
 
+const customerStatusMessages = {
+  waiting_payment: "Расчёт готов. Откройте заказ, чтобы проверить сумму и продолжить оплату.",
+  processing: "Заказ принят в работу. Сообщим, когда всё будет готово.",
+  done: "Заказ выполнен. Спасибо, что выбрали ЩаОплатим.",
+  declined: "Заказ не удалось выполнить. Откройте заказ или напишите в поддержку.",
+};
+
 async function notifyAdmin(order) {
   const chatId = process.env.ADMIN_CHAT_ID;
   if (!process.env.BOT_TOKEN || !chatId) return;
@@ -25,6 +32,31 @@ async function notifyAdmin(order) {
       chat_id: migratedChatId,
     });
   }
+}
+
+async function notifyCustomer(order) {
+  const text = customerStatusMessages[order.status];
+  const chatId = order.customer?.id;
+  if (!text || !chatId) return false;
+
+  const payload = {
+    chat_id: chatId,
+    parse_mode: "HTML",
+    text: [
+      `<b>${escapeTelegramHtml(statuses[order.status])}</b>`,
+      escapeTelegramHtml(text),
+      "",
+      `<b>Сервис:</b> ${escapeTelegramHtml(order.service)}`,
+      `Заказ: <code>${escapeTelegramHtml(order.id)}</code>`,
+    ].join("\n"),
+  };
+  const miniAppUrl = getMiniAppUrl();
+  if (miniAppUrl) {
+    payload.reply_markup = { inline_keyboard: [[{ text: "Открыть заказ", url: miniAppUrl }]] };
+  }
+
+  await telegramRequest("sendMessage", payload);
+  return true;
 }
 
 async function editOrderMessage(message, order) {
@@ -124,6 +156,14 @@ function buildAdminUrl() {
   }
 }
 
+function getMiniAppUrl() {
+  try {
+    return process.env.MINI_APP_LINK ? new URL(process.env.MINI_APP_LINK).toString() : "";
+  } catch {
+    return "";
+  }
+}
+
 function formatCustomer(customer = {}) {
   if (customer.username) return `@${customer.username}`;
   return customer.name || "Гость";
@@ -140,5 +180,6 @@ module.exports = {
   answerCallback,
   editOrderMessage,
   notifyAdmin,
+  notifyCustomer,
   telegramRequest,
 };

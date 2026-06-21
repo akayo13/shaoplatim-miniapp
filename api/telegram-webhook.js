@@ -1,7 +1,7 @@
-const { updateOrder } = require("./_lib/db");
+const { getOrder, updateOrder } = require("./_lib/db");
 const { readJsonBody, sendJson } = require("./_lib/http");
 const { statuses } = require("./_lib/statuses");
-const { answerCallback, editOrderMessage } = require("./_lib/telegram");
+const { answerCallback, editOrderMessage, notifyCustomer } = require("./_lib/telegram");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -26,7 +26,8 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    const order = await updateOrder(orderId, { status: nextStatus });
+    const existing = await getOrder(orderId);
+    const order = existing ? await updateOrder(orderId, { status: nextStatus }) : null;
 
     if (!order) {
       await answerCallback(callbackQuery.id, "Заявка не найдена");
@@ -36,6 +37,13 @@ module.exports = async function handler(req, res) {
 
     await answerCallback(callbackQuery.id, `Статус: ${statuses[nextStatus]}`);
     await editOrderMessage(callbackQuery.message, order);
+    if (nextStatus !== existing.status) {
+      try {
+        await notifyCustomer(order);
+      } catch (error) {
+        console.error("Customer status notification failed", error.message);
+      }
+    }
     sendJson(res, 200, { ok: true });
   } catch (error) {
     sendJson(res, 200, { ok: false, error: error.message });

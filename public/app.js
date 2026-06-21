@@ -201,6 +201,7 @@ const profileName = document.querySelector("#profileName");
 const profileAvatar = document.querySelector("#profileAvatar");
 const orderForm = document.querySelector("#orderForm");
 const historyCount = document.querySelector("#historyCount");
+const refreshOrdersButton = document.querySelector("#refreshOrdersButton");
 const successOrderId = document.querySelector("#successOrderId");
 const successOrderService = document.querySelector("#successOrderService");
 const successOrderStatus = document.querySelector("#successOrderStatus");
@@ -447,27 +448,33 @@ function getTimelineTone(status) {
 }
 
 async function loadOrders() {
-  const user = tg?.initDataUnsafe?.user;
-  if (!user?.id) {
-    historyItems.splice(0, historyItems.length, ...getLocalOrders());
-    renderHistory();
-    return;
-  }
+  refreshOrdersButton.disabled = true;
 
   try {
-    const response = await fetch("/api/orders", {
-      headers: { "X-Telegram-Init-Data": tg.initData },
-    });
-    if (!response.ok) throw new Error("Orders request failed");
+    const user = tg?.initDataUnsafe?.user;
+    if (!user?.id) {
+      historyItems.splice(0, historyItems.length, ...getLocalOrders());
+      renderHistory();
+      return;
+    }
 
-    const data = await response.json();
-    const ownOrders = data.orders.map(normalizeHistoryOrder);
+    try {
+      const response = await fetch("/api/orders", {
+        headers: { "X-Telegram-Init-Data": tg.initData },
+      });
+      if (!response.ok) throw new Error("Orders request failed");
 
-    historyItems.splice(0, historyItems.length, ...ownOrders);
-    renderHistory();
-  } catch {
-    historyItems.splice(0, historyItems.length, ...getLocalOrders());
-    renderHistory();
+      const data = await response.json();
+      const ownOrders = data.orders.map(normalizeHistoryOrder);
+
+      historyItems.splice(0, historyItems.length, ...ownOrders);
+      renderHistory();
+    } catch {
+      historyItems.splice(0, historyItems.length, ...getLocalOrders());
+      renderHistory();
+    }
+  } finally {
+    refreshOrdersButton.disabled = false;
   }
 }
 
@@ -588,6 +595,7 @@ function showView(viewName, options = { scroll: true }) {
   }
 
   if (viewName === "order") trackEvent("order_started");
+  if (viewName === "history") loadOrders();
 
   if (options.scroll) {
     window.requestAnimationFrame(() => {
@@ -794,6 +802,7 @@ paymentPrimaryButton.addEventListener("click", () => {
 paymentBackButton.addEventListener("click", () => showView("history"));
 
 successHistoryButton.addEventListener("click", () => showView("history"));
+refreshOrdersButton.addEventListener("click", loadOrders);
 
 successNewOrderButton.addEventListener("click", () => {
   orderForm.reset();
