@@ -581,6 +581,8 @@ function showView(viewName, options = { scroll: true }) {
     }
   }
 
+  if (viewName === "order") trackEvent("order_started");
+
   if (options.scroll) {
     window.requestAnimationFrame(() => {
       views[viewName].scrollIntoView({ behavior: "smooth", block: "start" });
@@ -696,6 +698,7 @@ async function submitOrder() {
   }
 
   order.status = order.status || "new";
+  trackEvent("order_submitted");
 
   historyItems.unshift({
     ...normalizeHistoryOrder(order),
@@ -762,6 +765,7 @@ timeline.addEventListener("click", (event) => {
   if (payButton) {
     const order = historyItems.find((item) => item.id === payButton.dataset.orderId);
     if (!order) return;
+    trackEvent("payment_opened");
     renderPaymentDraft(order);
     showView("payment");
   }
@@ -813,6 +817,7 @@ if (tg) {
 }
 
 initTelegram();
+trackEvent("app_opened");
 renderServices();
 renderCategoryFilter();
 renderCatalog();
@@ -841,12 +846,17 @@ function createLocalOrderId() {
 }
 
 function openSupport() {
+  trackEvent("support_opened");
   if (tg?.openTelegramLink) {
     tg.openTelegramLink(APP_BRAND.supportUrl);
     return;
   }
 
   window.open(APP_BRAND.supportUrl, "_blank", "noopener");
+}
+
+function trackEvent(name) {
+  window.va?.("event", { name });
 }
 
 function escapeHtml(value) {

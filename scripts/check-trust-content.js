@@ -11,8 +11,14 @@ for (const text of [
   "Полный возврат",
   "Как мы используем данные",
   'name="termsAccepted"',
+  '/_vercel/insights/script.js',
 ]) {
   assert(html.includes(text), `Missing trust content: ${text}`);
+}
+
+const app = fs.readFileSync(path.join(__dirname, "../public/app.js"), "utf8");
+for (const event of ["app_opened", "order_started", "order_submitted", "payment_opened", "support_opened"]) {
+  assert(app.includes(`trackEvent("${event}")`), `Missing analytics event: ${event}`);
 }
 
 assert(!hero.includes("Без паролей"), "Do not raise password concerns in the hero");
