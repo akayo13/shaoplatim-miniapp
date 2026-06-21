@@ -62,6 +62,18 @@
           <span class="muted" id="catalogCount"></span>
         </div>
         <div class="service-list" id="serviceList"></div>
+
+        <section class="process-card" aria-labelledby="processTitle">
+          <div class="section-head section-head--compact">
+            <h2 id="processTitle">Как всё происходит</h2>
+          </div>
+          <ol class="process-list">
+            <li><strong>Заявка</strong><span>Выберите сервис и укажите нужный тариф.</span></li>
+            <li><strong>Расчёт</strong><span>Мы уточним итоговую сумму до оплаты.</span></li>
+            <li><strong>Оплата</strong><span>Оплатите заказ после подтверждения расчёта.</span></li>
+            <li><strong>Готово</strong><span>Результат и статус останутся в приложении.</span></li>
+          </ol>
+        </section>
       </section>
 
       <section class="view" id="orderView">
@@ -106,6 +118,15 @@
           <div class="quote-box">
             <span>Следующий шаг</span>
             <strong id="quoteValue">Расчет перед оплатой</strong>
+          </div>
+          <div class="terms-consent">
+            <input id="termsAccepted" name="termsAccepted" type="checkbox" required />
+            <span>
+              <label for="termsAccepted">Принимаю</label>
+              <button class="inline-link" type="button" data-open-info="terms">условия сервиса</button>
+              и
+              <button class="inline-link" type="button" data-open-info="privacy">правила использования данных</button>
+            </span>
           </div>
           <button class="primary-button primary-button--wide" type="submit">Отправить заявку</button>
         </form>
@@ -203,6 +224,30 @@
             <span>Поддержка</span>
             <strong>@sokratmanager</strong>
           </button>
+        </div>
+        <div class="info-list">
+          <details class="info-disclosure">
+            <summary>Частые вопросы</summary>
+            <div class="info-disclosure__body">
+              <p><strong>Сколько занимает обработка?</strong> Обычно около часа. При высокой нагрузке может потребоваться больше времени.</p>
+              <p><strong>Где смотреть статус?</strong> Все этапы заказа отображаются в разделе «История».</p>
+              <p><strong>Как задать вопрос?</strong> Напишите в поддержку — кнопка находится выше.</p>
+            </div>
+          </details>
+          <details class="info-disclosure" id="serviceTerms">
+            <summary>Условия сервиса</summary>
+            <div class="info-disclosure__body">
+              <p>Итоговая сумма подтверждается до оплаты. Заказ начинается после получения оплаты и может зависеть от доступности выбранного сервиса.</p>
+              <p><strong>Полный возврат</strong> оформляется, если выполнить заказ не удалось. Срок зачисления зависит от банка или платёжной системы.</p>
+            </div>
+          </details>
+          <details class="info-disclosure" id="privacyInfo">
+            <summary>Как мы используем данные</summary>
+            <div class="info-disclosure__body">
+              <p>Имя, Telegram ID, username и сведения о заказе используются только для обработки заявки, связи с вами и показа истории заказов.</p>
+              <p>По вопросам о данных можно обратиться в поддержку.</p>
+            </div>
+          </details>
         </div>
       </section>
     </main>

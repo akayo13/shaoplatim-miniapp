@@ -1683,6 +1683,109 @@ button {
   font-size: 13px;
 }
 
+.process-card {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035));
+}
+
+.process-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: process;
+}
+
+.process-list li {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.18);
+  counter-increment: process;
+}
+
+.process-list strong::before {
+  margin-right: 7px;
+  color: var(--accent);
+  content: counter(process) ".";
+}
+
+.process-list span,
+.info-disclosure__body {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.terms-consent {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.terms-consent input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.inline-link {
+  padding: 0;
+  border: 0;
+  color: var(--accent);
+  background: none;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.info-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.info-disclosure {
+  border: 1px solid var(--glass-line);
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035));
+}
+
+.info-disclosure summary {
+  padding: 16px 18px;
+  color: var(--ink);
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.info-disclosure__body {
+  display: grid;
+  gap: 10px;
+  padding: 0 18px 18px;
+}
+
+.info-disclosure__body p {
+  margin: 0;
+}
+
+.info-disclosure__body strong {
+  color: var(--ink);
+}
+
 .toast {
   position: fixed;
   left: 50%;
@@ -2012,6 +2115,10 @@ button {
 
   .tab {
     font-size: 12px;
+  }
+
+  .process-list {
+    grid-template-columns: 1fr;
   }
 }
 

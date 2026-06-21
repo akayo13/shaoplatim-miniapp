@@ -726,6 +726,16 @@ profileSupportButton.addEventListener("click", () => {
   openSupport();
 });
 
+orderForm.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-open-info]");
+  if (!button) return;
+
+  const target = document.querySelector(button.dataset.openInfo === "terms" ? "#serviceTerms" : "#privacyInfo");
+  showView("profile", { scroll: false });
+  target.open = true;
+  window.requestAnimationFrame(() => target.scrollIntoView({ behavior: "smooth", block: "start" }));
+});
+
 popularServiceGrid.addEventListener("click", (event) => {
   const card = event.target.closest(".service-card");
   if (card) selectService(card);
