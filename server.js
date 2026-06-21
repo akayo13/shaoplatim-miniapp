@@ -2,6 +2,7 @@ const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
+const { calculateRubTotal } = require("./api/_lib/pricing");
 
 loadEnvFile();
 
@@ -11,6 +12,17 @@ const publicAppUrl = process.env.PUBLIC_APP_URL || `http://localhost:${port}`;
 const publicDir = path.join(__dirname, "public");
 const dataDir = path.join(__dirname, "data");
 const ordersFile = path.join(dataDir, "orders.json");
+const localQuotes = new Map();
+const localPlans = [
+  { id: "chatgpt-plus", service: "ChatGPT", name: "Plus — 1 месяц", usdPrice: 20 },
+  { id: "chatgpt-pro", service: "ChatGPT", name: "Pro — 1 месяц", usdPrice: 200 },
+  { id: "spotify-individual", service: "Spotify", name: "Premium Individual — 1 месяц", usdPrice: 12.99 },
+  { id: "google-one-basic", service: "Google", name: "Google One Basic 100 GB — 1 месяц", usdPrice: 1.99 },
+  { id: "google-one-premium", service: "Google", name: "Google One Premium 2 TB — 1 месяц", usdPrice: 9.99 },
+  { id: "midjourney-basic", service: "Midjourney", name: "Basic — 1 месяц", usdPrice: 10 },
+  { id: "midjourney-standard", service: "Midjourney", name: "Standard — 1 месяц", usdPrice: 30 },
+  { id: "midjourney-pro", service: "Midjourney", name: "Pro — 1 месяц", usdPrice: 60 },
+];
 
 const statuses = {
   new: "Новая",
@@ -66,6 +78,50 @@ async function handleApi(req, res, url) {
     return;
   }
 
+  if (req.method === "GET" && url.pathname === "/api/catalog") {
+    sendJson(res, 200, { plans: localPlans, demo: true });
+    return;
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/pricing-admin") {
+    sendJson(res, 200, { plans: localPlans.map((plan) => ({ ...plan, sourceMode: "demo", active: true })), updates: [] });
+    return;
+  }
+
+  if (req.method === "PATCH" && url.pathname === "/api/pricing-admin") {
+    const payload = await readJsonBody(req);
+    const plan = localPlans.find((item) => item.id === payload.planId);
+    const usdPrice = Number(payload.usdPrice);
+    if (!plan || !Number.isFinite(usdPrice) || usdPrice <= 0) return sendJson(res, 400, { error: "Некорректная цена" });
+    plan.usdPrice = usdPrice;
+    sendJson(res, 200, { ok: true, demo: true });
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/quotes") {
+    const payload = await readJsonBody(req);
+    const plan = localPlans.find((item) => item.id === payload.planId);
+    if (!plan) return sendJson(res, 404, { error: "Тариф не найден" });
+    const now = new Date();
+    const totals = calculateRubTotal(plan.usdPrice, 90);
+    const quote = {
+      id: `quote_${crypto.randomUUID()}`,
+      planId: plan.id,
+      service: plan.service,
+      plan: plan.name,
+      usdPrice: plan.usdPrice,
+      usdtRubRate: 90,
+      bufferedRate: totals.bufferedRate,
+      subtotalRub: totals.subtotal,
+      amountRub: totals.total,
+      createdAt: now.toISOString(),
+      expiresAt: new Date(now.getTime() + 30 * 60 * 1000).toISOString(),
+    };
+    localQuotes.set(quote.id, quote);
+    sendJson(res, 201, { quote, demo: true });
+    return;
+  }
+
   if (req.method === "GET" && url.pathname === "/api/orders") {
     const orders = readOrders();
     const customerId = url.searchParams.get("customerId")?.trim();
@@ -80,6 +136,16 @@ async function handleApi(req, res, url) {
 
   if (req.method === "POST" && url.pathname === "/api/orders") {
     const payload = await readJsonBody(req);
+    const fixedQuote = payload.quoteId ? localQuotes.get(payload.quoteId) : null;
+    if (payload.quoteId && (!fixedQuote || new Date(fixedQuote.expiresAt).getTime() <= Date.now())) {
+      return sendJson(res, 409, { error: "Расчёт истёк — обновите цену" });
+    }
+    if (fixedQuote) {
+      payload.service = fixedQuote.service;
+      payload.plan = fixedQuote.plan;
+      payload.quote = `${fixedQuote.amountRub.toLocaleString("ru-RU")} ₽ · цена зафиксирована`;
+      payload.pricing = fixedQuote;
+    }
     const validationError = validateOrderPayload(payload);
 
     if (validationError) {
@@ -167,6 +233,14 @@ function createOrder(payload) {
     customer: normalizeCustomer(payload.customer),
     createdAt: now,
     updatedAt: now,
+    quoteId: payload.pricing?.id || null,
+    planId: payload.pricing?.planId || null,
+    usdPrice: payload.pricing?.usdPrice || null,
+    usdtRubRate: payload.pricing?.usdtRubRate || null,
+    bufferedRate: payload.pricing?.bufferedRate || null,
+    subtotalRub: payload.pricing?.subtotalRub || null,
+    amountRub: payload.pricing?.amountRub || null,
+    pricedAt: payload.pricing?.createdAt || null,
   };
 }
 

@@ -31,6 +31,14 @@ function createOrderFromPayload(payload) {
     customer: normalizeCustomer(payload.customer),
     createdAt: now,
     updatedAt: now,
+    quoteId: payload.pricing?.id || null,
+    planId: payload.pricing?.planId || null,
+    usdPrice: payload.pricing?.usdPrice || null,
+    usdtRubRate: payload.pricing?.usdtRubRate || null,
+    bufferedRate: payload.pricing?.bufferedRate || null,
+    subtotalRub: payload.pricing?.subtotalRub || null,
+    amountRub: payload.pricing?.amountRub || null,
+    pricedAt: payload.pricing?.createdAt || null,
   };
 }
 

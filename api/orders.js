@@ -1,4 +1,4 @@
-const { createOrder, listOrders } = require("./_lib/db");
+const { createOrder, getOrder, listOrders } = require("./_lib/db");
 const { requireAdmin, requireCustomer } = require("./_lib/auth");
 const { methodNotAllowed, readJsonBody, sendJson } = require("./_lib/http");
 const {
@@ -8,6 +8,7 @@ const {
   validateOrderPayload,
 } = require("./_lib/orders");
 const { notifyAdmin } = require("./_lib/telegram");
+const { getQuoteForOrder, markQuoteUsed } = require("./_lib/pricing-store");
 
 module.exports = async function handler(req, res) {
   try {
@@ -40,6 +41,17 @@ module.exports = async function handler(req, res) {
       const customer = requireCustomer(req);
       if (!customer.ok) return sendJson(res, customer.status, { error: customer.error });
       const payload = await readJsonBody(req);
+      let fixedQuote = null;
+      if (payload.quoteId) {
+        const quoteResult = await getQuoteForOrder(payload.quoteId, customer.user.id);
+        if (quoteResult.usedOrderId) {
+          const existingOrder = await getOrder(quoteResult.usedOrderId);
+          if (existingOrder) return sendJson(res, 200, { order: existingOrder });
+        }
+        fixedQuote = quoteResult.quote;
+        payload.service = fixedQuote.service;
+        payload.plan = fixedQuote.plan;
+      }
       const validationError = validateOrderPayload(payload);
 
       if (validationError) {
@@ -49,12 +61,15 @@ module.exports = async function handler(req, res) {
 
       const order = await createOrder(createOrderFromPayload({
         ...payload,
+        quote: fixedQuote ? `${fixedQuote.amountRub.toLocaleString("ru-RU")} ₽ · цена зафиксирована` : "Расчёт менеджером перед оплатой",
+        pricing: fixedQuote,
         customer: {
           id: customer.user.id,
           name: customer.user.first_name || "Клиент",
           username: customer.user.username || "",
         },
       }));
+      if (fixedQuote) await markQuoteUsed(fixedQuote.id, order.id);
       await notifyAdmin(order);
       sendJson(res, 201, { order });
       return;

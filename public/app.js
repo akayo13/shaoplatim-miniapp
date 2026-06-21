@@ -196,7 +196,12 @@ const selectedServiceName = document.querySelector("#selectedServiceName");
 const selectedServicePlan = document.querySelector("#selectedServicePlan");
 const changeServiceButton = document.querySelector("#changeServiceButton");
 const planInput = document.querySelector("#planInput");
+const planCatalogField = document.querySelector("#planCatalogField");
+const planCatalogSelect = document.querySelector("#planCatalogSelect");
+const planManualField = document.querySelector("#planManualField");
 const quoteValue = document.querySelector("#quoteValue");
+const quoteLabel = document.querySelector("#quoteLabel");
+const quoteNote = document.querySelector("#quoteNote");
 const profileName = document.querySelector("#profileName");
 const profileAvatar = document.querySelector("#profileAvatar");
 const orderForm = document.querySelector("#orderForm");
@@ -215,6 +220,8 @@ const paymentBackButton = document.querySelector("#paymentBackButton");
 const profileSupportButton = document.querySelector("#profileSupportButton");
 let activeCategory = "all";
 let selectedPaymentOrder = null;
+let catalogPlans = [];
+let currentQuote = null;
 
 function initTelegram() {
   if (!tg) return;
@@ -618,8 +625,9 @@ function selectServiceByName(name, options = { openOrder: true }) {
   if (!service) return;
 
   serviceInput.value = service.name;
-  planInput.value = service.plan;
-  quoteValue.textContent = service.quote;
+  currentQuote = null;
+  configurePlanPicker(service);
+  resetQuote();
   customServiceInput.value = "";
   customServiceField.classList.add("is-hidden");
   selectedServiceIcon.innerHTML = renderServiceIcon(service);
@@ -635,7 +643,12 @@ function selectServiceByName(name, options = { openOrder: true }) {
 function selectCustomService(options = { openOrder: true }) {
   serviceInput.value = "";
   planInput.value = "";
-  quoteValue.textContent = "Расчет перед оплатой";
+  currentQuote = null;
+  planCatalogField.classList.add("is-hidden");
+  planManualField.classList.remove("is-hidden");
+  planInput.required = true;
+  planCatalogSelect.required = false;
+  resetQuote();
   customServiceField.classList.remove("is-hidden");
   selectedServiceIcon.textContent = "+";
   selectedServiceName.textContent = "Другой сервис";
@@ -678,7 +691,7 @@ function collectOrderData() {
     plan: formData.get("plan"),
     access: formData.get("access"),
     comment: formData.get("comment"),
-    quote: quoteValue.textContent,
+    quoteId: currentQuote?.id || null,
     customer: {
       id: user?.id || null,
       name: user?.first_name || profileName.textContent || "Гость",
@@ -704,13 +717,13 @@ async function submitOrder() {
       body: JSON.stringify(order),
     });
 
-    if (!response.ok) throw new Error("Order was not saved");
-
     const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Order was not saved");
+
     order.id = data.order.id;
     order.status = data.order.status;
-  } catch {
-    showToast("Не удалось отправить заявку. Попробуйте ещё раз.");
+  } catch (error) {
+    showToast(error.message || "Не удалось отправить заявку. Попробуйте ещё раз.");
     return;
   }
 
@@ -811,6 +824,10 @@ successNewOrderButton.addEventListener("click", () => {
   customServiceInput.setCustomValidity("");
   customServiceField.classList.add("is-hidden");
   quoteValue.textContent = "Расчет перед оплатой";
+  currentQuote = null;
+  planCatalogField.classList.add("is-hidden");
+  planManualField.classList.remove("is-hidden");
+  planCatalogSelect.required = false;
   selectedServiceIcon.textContent = "?";
   selectedServiceName.textContent = "Сервис не выбран";
   selectedServicePlan.textContent = "Выберите вариант выше или нажмите «Другой сервис»";
@@ -832,6 +849,8 @@ customServiceInput.addEventListener("input", () => {
   customServiceInput.setCustomValidity("");
 });
 
+planCatalogSelect.addEventListener("change", requestSelectedQuote);
+
 orderForm.addEventListener("submit", (event) => {
   event.preventDefault();
   submitOrder();
@@ -848,7 +867,74 @@ renderCategoryFilter();
 renderCatalog();
 renderOrderServices();
 if (!tg) renderProfileAvatar();
+loadCatalog();
 loadOrders();
+
+async function loadCatalog() {
+  try {
+    const response = await fetch("/api/catalog", { headers: { "X-Telegram-Init-Data": tg?.initData || "" } });
+    if (!response.ok) return;
+    catalogPlans = (await response.json()).plans || [];
+    if (serviceInput.value) configurePlanPicker(getService(serviceInput.value));
+  } catch {
+    catalogPlans = [];
+  }
+}
+
+function configurePlanPicker(service) {
+  const plans = catalogPlans.filter((plan) => plan.service === service.name);
+  if (!plans.length) {
+    planCatalogField.classList.add("is-hidden");
+    planManualField.classList.remove("is-hidden");
+    planInput.required = true;
+    planCatalogSelect.required = false;
+    planInput.value = service.plan;
+    return;
+  }
+
+  planInput.value = "";
+  planInput.required = false;
+  planCatalogSelect.required = true;
+  planManualField.classList.add("is-hidden");
+  planCatalogField.classList.remove("is-hidden");
+  planCatalogSelect.innerHTML = `<option value="">Выберите тариф</option>${plans.map((plan) => `<option value="${escapeHtml(plan.id)}">${escapeHtml(plan.name)} · $${plan.usdPrice}</option>`).join("")}`;
+}
+
+async function requestSelectedQuote() {
+  const plan = catalogPlans.find((item) => item.id === planCatalogSelect.value);
+  currentQuote = null;
+  if (!plan) {
+    planInput.value = "";
+    resetQuote();
+    return;
+  }
+  planInput.value = plan.name;
+  quoteLabel.textContent = "Считаем стоимость";
+  quoteValue.textContent = "Обновляем курс…";
+  quoteNote.textContent = "Цена будет зафиксирована в заявке на 30 минут.";
+  try {
+    const response = await fetch("/api/quotes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Telegram-Init-Data": tg?.initData || "" },
+      body: JSON.stringify({ planId: plan.id }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Не удалось рассчитать цену");
+    currentQuote = data.quote;
+    quoteLabel.textContent = "Итого к оплате";
+    quoteValue.textContent = `${Number(currentQuote.amountRub).toLocaleString("ru-RU")} ₽`;
+    quoteNote.textContent = "Цена зафиксируется после отправки заявки. Расчёт действует 30 минут.";
+  } catch (error) {
+    resetQuote();
+    showToast(error.message);
+  }
+}
+
+function resetQuote() {
+  quoteLabel.textContent = "Следующий шаг";
+  quoteValue.textContent = "Расчет перед оплатой";
+  quoteNote.textContent = "Если автоматический тариф недоступен, сумму подтвердит менеджер.";
+}
 
 function validateSelectedService() {
   if (!serviceInput.value.trim()) {

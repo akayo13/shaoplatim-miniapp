@@ -19,5 +19,6 @@
       "source": "/admin.html",
       "destination": "/admin.html"
     }
-  ]
+  ],
+  "crons": [{ "path": "/api/price-check", "schedule": "0 8 * * *" }]
 }

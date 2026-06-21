@@ -5,7 +5,7 @@
   "description": "Telegram Mini App and admin panel for ЩаОплатим.",
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check public/app.js && node --check public/admin.js && node --check api/orders.js && node --check api/orders/[id].js && node --check api/telegram-webhook.js && node --check api/health.js && node --check scripts/set-telegram-menu.js && node --check scripts/set-telegram-webhook.js && node scripts/check-trust-content.js && node scripts/check-api-security.js && node scripts/check-status-flow.js",
+    "check": "node --check server.js && node --check public/app.js && node --check public/admin.js && node --check api/orders.js && node --check api/orders/[id].js && node --check api/catalog.js && node --check api/quotes.js && node --check api/pricing-admin.js && node --check api/price-check.js && node --check api/telegram-webhook.js && node --check api/health.js && node --check scripts/set-telegram-menu.js && node --check scripts/set-telegram-webhook.js && node scripts/check-trust-content.js && node scripts/check-api-security.js && node scripts/check-status-flow.js && node scripts/check-pricing.js",
     "telegram:menu": "node scripts/set-telegram-menu.js",
     "telegram:webhook": "node scripts/set-telegram-webhook.js",
     "telegram:channel-post": "node scripts/send-channel-post.js"

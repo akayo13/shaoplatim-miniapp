@@ -34,6 +34,12 @@ async function notifyAdmin(order) {
   }
 }
 
+async function notifyPricingAdmin(text) {
+  const chatId = process.env.ADMIN_CHAT_ID;
+  if (!process.env.BOT_TOKEN || !chatId) return;
+  await telegramRequest("sendMessage", { chat_id: chatId, text, disable_web_page_preview: true });
+}
+
 async function notifyCustomer(order) {
   const text = customerStatusMessages[order.status];
   const chatId = order.customer?.id;
@@ -180,6 +186,7 @@ module.exports = {
   answerCallback,
   editOrderMessage,
   notifyAdmin,
+  notifyPricingAdmin,
   notifyCustomer,
   telegramRequest,
 };

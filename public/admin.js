@@ -23,6 +23,9 @@ let stats = null;
 let adminAccess = null;
 
 const adminOrders = document.querySelector("#adminOrders");
+const pricingPlans = document.querySelector("#pricingPlans");
+const pricingUpdates = document.querySelector("#pricingUpdates");
+const refreshPricingButton = document.querySelector("#refreshPricingButton");
 const adminSummary = document.querySelector("#adminSummary");
 const statusFilter = document.querySelector("#statusFilter");
 const refreshButton = document.querySelector("#refreshButton");
@@ -288,6 +291,58 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+async function loadPricing() {
+  try {
+    const response = await fetch("/api/pricing-admin", { headers: getAdminHeaders() });
+    if (!response.ok) return;
+    const data = await response.json();
+    renderPricing(data.plans || [], data.updates || []);
+  } catch {
+    showToast("Не удалось загрузить цены");
+  }
+}
+
+function renderPricing(plans, updates) {
+  const pending = updates.filter((item) => item.status === "pending");
+  pricingUpdates.innerHTML = pending.length ? `
+    <h3>Ждут решения</h3>
+    ${pending.map((item) => `<article class="pricing-card pricing-card--update" data-update-id="${escapeHtml(item.id)}">
+      <div><strong>${escapeHtml(item.service || item.planId)} · ${escapeHtml(item.plan || "")}</strong><small>${item.kind === "error" ? escapeHtml(item.message) : `$${item.oldPrice} → $${item.proposedPrice}`}</small></div>
+      <div class="pricing-card__actions">${item.proposedPrice == null ? "" : '<button class="primary-button" type="button" data-price-action="accept">Принять</button>'}<button class="ghost-button" type="button" data-price-action="reject">Отклонить</button></div>
+    </article>`).join("")}
+  ` : "";
+  pricingPlans.innerHTML = plans.map((plan) => `<article class="pricing-card" data-plan-id="${escapeHtml(plan.id)}">
+    <div><strong>${escapeHtml(plan.service)} · ${escapeHtml(plan.name)}</strong><small>${escapeHtml(plan.sourceMode)} · ${plan.lastCheckedAt ? formatDate(plan.lastCheckedAt) : "ещё не проверялся"}</small></div>
+    <label><span>USD</span><input type="number" min="0.01" max="10000" step="0.01" value="${plan.usdPrice}" data-plan-price></label>
+    <button class="ghost-button" type="button" data-save-price>Сохранить</button>
+  </article>`).join("");
+}
+
+async function patchPricing(payload) {
+  const response = await fetch("/api/pricing-admin", { method: "PATCH", headers: { "Content-Type": "application/json", ...getAdminHeaders() }, body: JSON.stringify(payload) });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Не удалось сохранить");
+  await loadPricing();
+}
+
+document.addEventListener("click", async (event) => {
+  const actionButton = event.target.closest("[data-price-action]");
+  const savePriceButton = event.target.closest("[data-save-price]");
+  try {
+    if (actionButton) {
+      const card = actionButton.closest("[data-update-id]");
+      await patchPricing({ updateId: card.dataset.updateId, action: actionButton.dataset.priceAction });
+      showToast("Изменение обработано");
+    } else if (savePriceButton) {
+      const card = savePriceButton.closest("[data-plan-id]");
+      await patchPricing({ planId: card.dataset.planId, usdPrice: Number(card.querySelector("[data-plan-price]").value) });
+      showToast("Цена сохранена");
+    }
+  } catch (error) {
+    showToast(error.message);
+  }
+});
+
 adminOrders.addEventListener("click", (event) => {
   const statusButton = event.target.closest("[data-set-status]");
   if (statusButton) {
@@ -314,5 +369,7 @@ adminOrders.addEventListener("submit", (event) => {
 
 statusFilter.addEventListener("change", renderOrders);
 refreshButton.addEventListener("click", loadAdminOrders);
+refreshPricingButton.addEventListener("click", loadPricing);
 
 loadAdminOrders();
+loadPricing();

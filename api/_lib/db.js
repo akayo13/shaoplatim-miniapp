@@ -30,6 +30,17 @@ async function ensureSchema() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
+  await getSql()`
+    ALTER TABLE orders
+      ADD COLUMN IF NOT EXISTS quote_id TEXT UNIQUE,
+      ADD COLUMN IF NOT EXISTS plan_id TEXT,
+      ADD COLUMN IF NOT EXISTS usd_price NUMERIC,
+      ADD COLUMN IF NOT EXISTS usdt_rub_rate NUMERIC,
+      ADD COLUMN IF NOT EXISTS buffered_rate NUMERIC,
+      ADD COLUMN IF NOT EXISTS subtotal_rub NUMERIC,
+      ADD COLUMN IF NOT EXISTS amount_rub INTEGER,
+      ADD COLUMN IF NOT EXISTS priced_at TIMESTAMPTZ
+  `;
 }
 
 function mapOrder(row) {
@@ -45,6 +56,14 @@ function mapOrder(row) {
     customer: row.customer || {},
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    quoteId: row.quote_id || null,
+    planId: row.plan_id || null,
+    usdPrice: row.usd_price == null ? null : Number(row.usd_price),
+    usdtRubRate: row.usdt_rub_rate == null ? null : Number(row.usdt_rub_rate),
+    bufferedRate: row.buffered_rate == null ? null : Number(row.buffered_rate),
+    subtotalRub: row.subtotal_rub == null ? null : Number(row.subtotal_rub),
+    amountRub: row.amount_rub == null ? null : Number(row.amount_rub),
+    pricedAt: row.priced_at || null,
   };
 }
 
@@ -73,6 +92,7 @@ async function createOrder(order) {
       customer,
       created_at,
       updated_at
+      , quote_id, plan_id, usd_price, usdt_rub_rate, buffered_rate, subtotal_rub, amount_rub, priced_at
     )
     VALUES (
       ${order.id},
@@ -86,6 +106,7 @@ async function createOrder(order) {
       ${JSON.stringify(order.customer)}::jsonb,
       ${order.createdAt},
       ${order.updatedAt}
+      , ${order.quoteId || null}, ${order.planId || null}, ${order.usdPrice || null}, ${order.usdtRubRate || null}, ${order.bufferedRate || null}, ${order.subtotalRub || null}, ${order.amountRub || null}, ${order.pricedAt || null}
     )
     RETURNING *
   `;
@@ -132,4 +153,7 @@ module.exports = {
   getOrder,
   listOrders,
   updateOrder,
+  ensureSchema,
+  getSql,
+  mapOrder,
 };

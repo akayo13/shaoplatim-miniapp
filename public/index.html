@@ -101,7 +101,13 @@
             <span>Название сервиса</span>
             <input id="customServiceInput" type="text" placeholder="Например: Notion, Midjourney, PlayStation..." autocomplete="off" />
           </label>
-          <label class="field">
+          <label class="field is-hidden" id="planCatalogField">
+            <span>Тариф</span>
+            <select id="planCatalogSelect">
+              <option value="">Выберите тариф</option>
+            </select>
+          </label>
+          <label class="field" id="planManualField">
             <span>Тариф или сумма</span>
             <input id="planInput" name="plan" type="text" placeholder="Plus на 1 месяц, $20..." autocomplete="off" required />
           </label>
@@ -119,8 +125,9 @@
             <textarea id="commentInput" name="comment" rows="3" placeholder="Страна аккаунта, дедлайн, важные детали"></textarea>
           </label>
           <div class="quote-box">
-            <span>Следующий шаг</span>
+            <span id="quoteLabel">Следующий шаг</span>
             <strong id="quoteValue">Расчет перед оплатой</strong>
+            <small id="quoteNote">Для доступных тарифов цена рассчитается автоматически.</small>
           </div>
           <div class="terms-consent">
             <input id="termsAccepted" name="termsAccepted" type="checkbox" required />
