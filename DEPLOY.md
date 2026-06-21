@@ -33,13 +33,23 @@ DATABASE_URL=...
 BOT_TOKEN=...
 ADMIN_CHAT_ID=...
 ADMIN_PANEL_KEY=...
+ADMIN_PANEL_PASSWORD=...
 ADMIN_TELEGRAM_IDS=...
 PUBLIC_APP_URL=https://your-vercel-domain.vercel.app
 TELEGRAM_MENU_TEXT=Открыть ЩаОплатим
+CHANNEL_ID=@shaoplatim
+MINI_APP_LINK=https://t.me/shaoplatim_bot?startapp
 ```
 
 `ADMIN_PANEL_KEY` используется для защищенной ссылки на админку из админ-чата.
 `ADMIN_TELEGRAM_IDS` можно заполнить через запятую, если админка открывается как Telegram Web App и доступ нужно ограничить по Telegram ID.
+
+Перед боевым запуском:
+
+- перевыпустить токен бота, пароль Neon, ключ и пароль админки, если они передавались в сообщениях или логах;
+- убедиться, что `MINI_APP_LINK` не содержит лишних символов;
+- настроить в Vercel Firewall ограничение частоты запросов для `POST /api/orders`;
+- не добавлять `.env` и значения секретов в Git.
 
 ### 3. Deploy
 

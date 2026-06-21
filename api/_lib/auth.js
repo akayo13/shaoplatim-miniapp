@@ -1,5 +1,16 @@
 const crypto = require("node:crypto");
 
+function requireCustomer(req) {
+  const initData = req.headers["x-telegram-init-data"];
+  const verified = initData ? verifyTelegramInitData(initData) : { ok: false, error: "Откройте приложение в Telegram" };
+
+  if (!verified.ok || !verified.user?.id) {
+    return { ok: false, status: 401, error: verified.error || "Пользователь Telegram не найден" };
+  }
+
+  return verified;
+}
+
 function requireAdmin(req) {
   const keyAuth = verifyAdminKey(req);
   if (keyAuth.ok) return requireAdminPassword(req, keyAuth);
@@ -160,4 +171,5 @@ function safeEqual(left, right) {
 
 module.exports = {
   requireAdmin,
+  requireCustomer,
 };

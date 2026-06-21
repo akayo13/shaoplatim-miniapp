@@ -38,7 +38,7 @@ persistAdminKey();
 
 async function loadAdminOrders() {
   try {
-    const response = await fetch("/api/orders", {
+    const response = await fetch("/api/orders?admin=1", {
       headers: getAdminHeaders(),
     });
     if (!response.ok) {

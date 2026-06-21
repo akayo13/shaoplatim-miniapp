@@ -446,19 +446,16 @@ function getTimelineTone(status) {
 
 async function loadOrders() {
   const user = tg?.initDataUnsafe?.user;
-  const query = new URLSearchParams();
-
-  if (user?.id) query.set("customerId", String(user.id));
-  if (user?.username) query.set("username", user.username);
-
-  if (!query.toString()) {
+  if (!user?.id) {
     historyItems.splice(0, historyItems.length, ...getLocalOrders());
     renderHistory();
     return;
   }
 
   try {
-    const response = await fetch(`/api/orders?${query.toString()}`);
+    const response = await fetch("/api/orders", {
+      headers: { "X-Telegram-Init-Data": tg.initData },
+    });
     if (!response.ok) throw new Error("Orders request failed");
 
     const data = await response.json();
@@ -677,7 +674,10 @@ async function submitOrder() {
   try {
     const response = await fetch("/api/orders", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-Telegram-Init-Data": tg?.initData || "",
+      },
       body: JSON.stringify(order),
     });
 
@@ -687,11 +687,8 @@ async function submitOrder() {
     order.id = data.order.id;
     order.status = data.order.status;
   } catch {
-    order.id = order.id || createLocalOrderId();
-    order.status = "new";
-    const saved = JSON.parse(localStorage.getItem("globalPayOrders") || "[]");
-    saved.unshift(order);
-    localStorage.setItem("globalPayOrders", JSON.stringify(saved));
+    showToast("Не удалось отправить заявку. Попробуйте ещё раз.");
+    return;
   }
 
   if (tg) {

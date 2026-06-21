@@ -1,9 +1,10 @@
 const { createOrder, listOrders } = require("./_lib/db");
-const { requireAdmin } = require("./_lib/auth");
+const { requireAdmin, requireCustomer } = require("./_lib/auth");
 const { methodNotAllowed, readJsonBody, sendJson } = require("./_lib/http");
 const {
   buildStats,
   createOrderFromPayload,
+  isOwnOrder,
   validateOrderPayload,
 } = require("./_lib/orders");
 const { notifyAdmin } = require("./_lib/telegram");
@@ -12,32 +13,32 @@ module.exports = async function handler(req, res) {
   try {
     if (req.method === "GET") {
       const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
-      const customerId = url.searchParams.get("customerId")?.trim();
-      const username = normalizeUsername(url.searchParams.get("username"));
+      if (url.searchParams.get("admin") === "1") {
+        const admin = requireAdmin(req);
+        if (!admin.ok) {
+          sendJson(res, admin.status, {
+            error: admin.error,
+            userId: admin.userId,
+            passwordRequired: admin.passwordRequired || false,
+          });
+          return;
+        }
 
-      if (customerId || username) {
         const orders = await listOrders();
-        const ownOrders = orders.filter((order) => isOwnOrder(order, { customerId, username }));
-        sendJson(res, 200, { orders: ownOrders });
+        sendJson(res, 200, { orders, stats: buildStats(orders) });
         return;
       }
 
-      const admin = requireAdmin(req);
-      if (!admin.ok) {
-        sendJson(res, admin.status, {
-          error: admin.error,
-          userId: admin.userId,
-          passwordRequired: admin.passwordRequired || false,
-        });
-        return;
-      }
-
+      const customer = requireCustomer(req);
+      if (!customer.ok) return sendJson(res, customer.status, { error: customer.error });
       const orders = await listOrders();
-      sendJson(res, 200, { orders, stats: buildStats(orders) });
+      sendJson(res, 200, { orders: orders.filter((order) => isOwnOrder(order, customer.user)) });
       return;
     }
 
     if (req.method === "POST") {
+      const customer = requireCustomer(req);
+      if (!customer.ok) return sendJson(res, customer.status, { error: customer.error });
       const payload = await readJsonBody(req);
       const validationError = validateOrderPayload(payload);
 
@@ -46,7 +47,14 @@ module.exports = async function handler(req, res) {
         return;
       }
 
-      const order = await createOrder(createOrderFromPayload(payload));
+      const order = await createOrder(createOrderFromPayload({
+        ...payload,
+        customer: {
+          id: customer.user.id,
+          name: customer.user.first_name || "Клиент",
+          username: customer.user.username || "",
+        },
+      }));
       await notifyAdmin(order);
       sendJson(res, 201, { order });
       return;
@@ -54,21 +62,7 @@ module.exports = async function handler(req, res) {
 
     methodNotAllowed(res);
   } catch (error) {
-    sendJson(res, 500, { error: error.message });
+    console.error("Orders API failed", error.name);
+    sendJson(res, error.statusCode || 500, { error: error.statusCode ? error.message : "Internal server error" });
   }
 };
-
-function isOwnOrder(order, identity) {
-  const customer = order.customer || {};
-  const orderCustomerId = customer.id ? String(customer.id) : "";
-  const orderUsername = normalizeUsername(customer.username);
-
-  if (identity.customerId && orderCustomerId === identity.customerId) return true;
-  if (identity.username && orderUsername === identity.username) return true;
-
-  return false;
-}
-
-function normalizeUsername(value) {
-  return value ? String(value).trim().replace(/^@/, "").toLowerCase() : "";
-}
