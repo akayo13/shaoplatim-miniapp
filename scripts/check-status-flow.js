@@ -15,6 +15,13 @@ const html = read("public/index.html");
 for (const status of ["waiting_payment", "processing", "done", "declined"]) {
   assert.match(telegram, new RegExp(`${status}:`));
 }
+assert.match(telegram, /waiting_payment: "Расчёт готов\. Проверьте сумму и перейдите к оплате\."/);
+assert.match(telegram, /processing: "Оплата подтверждена\. Заказ уже в работе\."/);
+assert.match(telegram, /done: "Заказ выполнен\. Спасибо!"/);
+assert.match(telegram, /declined: "Заказ не выполнен\. Подробности доступны внутри заказа\."/);
+assert.match(telegram, /escapeTelegramHtml\(order\.service\).* · .*escapeTelegramHtml\(order\.plan\)/);
+assert.match(telegram, /Заказ <code>#\$\{formatOrderId\(order\.id\)\}<\/code>/);
+assert.match(telegram, /function formatOrderId\(id\)/);
 assert.doesNotMatch(telegram, /customerStatusMessages\s*=\s*{[^}]*\bnew:/s);
 assert.match(orderApi, /notifyCustomer/);
 assert.match(orderApi, /existing\.status/);

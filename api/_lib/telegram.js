@@ -1,10 +1,10 @@
 const { statuses } = require("./statuses");
 
 const customerStatusMessages = {
-  waiting_payment: "Расчёт готов. Откройте заказ, чтобы проверить сумму и продолжить оплату.",
-  processing: "Заказ принят в работу. Сообщим, когда всё будет готово.",
-  done: "Заказ выполнен. Спасибо, что выбрали ЩаОплатим.",
-  declined: "Заказ не удалось выполнить. Откройте заказ или напишите в поддержку.",
+  waiting_payment: "Расчёт готов. Проверьте сумму и перейдите к оплате.",
+  processing: "Оплата подтверждена. Заказ уже в работе.",
+  done: "Заказ выполнен. Спасибо!",
+  declined: "Заказ не выполнен. Подробности доступны внутри заказа.",
 };
 
 async function notifyAdmin(order) {
@@ -52,9 +52,9 @@ async function notifyCustomer(order) {
       `<b>${escapeTelegramHtml(statuses[order.status])}</b>`,
       escapeTelegramHtml(text),
       "",
-      `<b>Сервис:</b> ${escapeTelegramHtml(order.service)}`,
+      `${escapeTelegramHtml(order.service)} · ${escapeTelegramHtml(order.plan)}`,
       order.amountRub ? `<b>К оплате:</b> ${escapeTelegramHtml(order.amountRub.toLocaleString("ru-RU"))} ₽` : "",
-      `Заказ: <code>${escapeTelegramHtml(order.id)}</code>`,
+      `Заказ <code>#${formatOrderId(order.id)}</code>`,
     ].filter(Boolean).join("\n"),
   };
   const miniAppUrl = getMiniAppUrl(order.id);
@@ -177,6 +177,10 @@ function getMiniAppUrl(orderId) {
 function formatCustomer(customer = {}) {
   if (customer.username) return `@${customer.username}`;
   return customer.name || "Гость";
+}
+
+function formatOrderId(id) {
+  return String(id || "").slice(0, 8).toUpperCase();
 }
 
 function escapeTelegramHtml(value) {
