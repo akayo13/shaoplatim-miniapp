@@ -1436,6 +1436,10 @@ button {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
+.order-card__meta .order-card__amount {
+  grid-column: 1 / -1;
+}
+
 .order-card__meta span {
   color: rgba(247, 248, 247, 0.44);
   font-size: 11px;

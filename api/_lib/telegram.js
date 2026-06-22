@@ -53,10 +53,11 @@ async function notifyCustomer(order) {
       escapeTelegramHtml(text),
       "",
       `<b>Сервис:</b> ${escapeTelegramHtml(order.service)}`,
+      order.amountRub ? `<b>К оплате:</b> ${escapeTelegramHtml(order.amountRub.toLocaleString("ru-RU"))} ₽` : "",
       `Заказ: <code>${escapeTelegramHtml(order.id)}</code>`,
-    ].join("\n"),
+    ].filter(Boolean).join("\n"),
   };
-  const miniAppUrl = getMiniAppUrl();
+  const miniAppUrl = getMiniAppUrl(order.id);
   if (miniAppUrl) {
     payload.reply_markup = { inline_keyboard: [[{ text: "Открыть заказ", url: miniAppUrl }]] };
   }
@@ -162,9 +163,12 @@ function buildAdminUrl() {
   }
 }
 
-function getMiniAppUrl() {
+function getMiniAppUrl(orderId) {
   try {
-    return process.env.MINI_APP_LINK ? new URL(process.env.MINI_APP_LINK).toString() : "";
+    if (!process.env.MINI_APP_LINK) return "";
+    const url = new URL(process.env.MINI_APP_LINK);
+    url.searchParams.set("startapp", `order_${orderId}`);
+    return url.toString();
   } catch {
     return "";
   }

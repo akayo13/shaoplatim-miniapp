@@ -215,6 +215,9 @@ const successNewOrderButton = document.querySelector("#successNewOrderButton");
 const paymentOrderId = document.querySelector("#paymentOrderId");
 const paymentService = document.querySelector("#paymentService");
 const paymentAmount = document.querySelector("#paymentAmount");
+const paymentTitle = document.querySelector("#paymentTitle");
+const paymentSubtitle = document.querySelector("#paymentSubtitle");
+const paymentNotice = document.querySelector(".payment-card__notice");
 const paymentPrimaryButton = document.querySelector("#paymentPrimaryButton");
 const paymentBackButton = document.querySelector("#paymentBackButton");
 const profileSupportButton = document.querySelector("#profileSupportButton");
@@ -222,6 +225,7 @@ let activeCategory = "all";
 let selectedPaymentOrder = null;
 let catalogPlans = [];
 let currentQuote = null;
+let startOrderHandled = false;
 
 function initTelegram() {
   if (!tg) return;
@@ -405,6 +409,12 @@ function renderHistoryItem(item) {
           <span>Создан</span>
           <strong>${formatDate(item.createdAt)}</strong>
         </div>
+        ${item.amountRub ? `
+          <div class="order-card__amount">
+            <span>К оплате</span>
+            <strong>${formatMoney(item.amountRub)}</strong>
+          </div>
+        ` : ""}
       </div>
 
       <div class="order-progress" aria-label="Статус заказа">
@@ -454,10 +464,15 @@ function renderOrderSuccess(order) {
 }
 
 function renderPaymentDraft(order) {
+  const isPaymentReady = order.status === "waiting_payment";
   selectedPaymentOrder = order;
+  paymentTitle.textContent = statusLabels[order.status] || "Заказ";
+  paymentSubtitle.textContent = getNextStepText(order.status);
   paymentOrderId.textContent = `#${formatOrderId(order.id)}`;
   paymentService.textContent = `${order.service} · ${order.plan}`;
-  paymentAmount.textContent = order.amount ? formatMoney(order.amount) : "Сумма появится после расчета";
+  paymentAmount.textContent = order.amountRub ? formatMoney(order.amountRub) : "Сумма появится после расчета";
+  paymentPrimaryButton.hidden = !isPaymentReady;
+  paymentNotice.hidden = !isPaymentReady;
 }
 
 function getTimelineTone(status) {
@@ -488,6 +503,7 @@ async function loadOrders() {
 
       historyItems.splice(0, historyItems.length, ...ownOrders);
       renderHistory();
+      openStartOrder();
     } catch {
       historyItems.splice(0, historyItems.length, ...getLocalOrders());
       renderHistory();
@@ -510,9 +526,23 @@ function normalizeHistoryOrder(order) {
     access: order.access || "Уточнить способ",
     comment: order.comment || "",
     status: order.status || "new",
+    amountRub: order.amountRub == null ? null : Number(order.amountRub),
     createdAt: order.createdAt || new Date().toISOString(),
     updatedAt: order.updatedAt || order.createdAt || new Date().toISOString(),
   };
+}
+
+function openStartOrder() {
+  if (startOrderHandled) return;
+  const startParam = tg?.initDataUnsafe?.start_param || "";
+  if (!startParam.startsWith("order_")) return;
+
+  const order = historyItems.find((item) => item.id === startParam.slice(6));
+  if (!order) return;
+  startOrderHandled = true;
+
+  renderPaymentDraft(order);
+  showView("payment");
 }
 
 function formatDate(value) {
