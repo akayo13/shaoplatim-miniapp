@@ -251,7 +251,10 @@ function renderServices() {
           </span>
           <h3>${service.name}</h3>
           <p>${service.note}</p>
-          <span class="service-card__plan">${service.plan}</span>
+          <span class="service-card__meta">
+            <span class="service-card__plan">${service.plan}</span>
+            ${renderServicePrice(service.name)}
+          </span>
         </button>
       `,
     )
@@ -299,12 +302,21 @@ function renderServiceRow(service) {
         <small>${service.note}</small>
       </span>
       <span class="service-row__plan">${service.plan}</span>
+      ${renderServicePrice(service.name, "service-row__price")}
     </button>
   `;
 }
 
 function renderServiceIcon(service) {
   return service.logo ? `<img src="${service.logo}" alt="" />` : `<span>${service.icon}</span>`;
+}
+
+function renderServicePrice(serviceName, className = "service-card__price") {
+  const prices = catalogPlans
+    .filter((plan) => plan.service === serviceName && Number.isFinite(plan.amountRub))
+    .map((plan) => plan.amountRub);
+  const amount = prices.length ? Math.min(...prices) : null;
+  return `<span class="${className} ${amount ? "" : `${className}--manual`}">${amount ? `от ${amount.toLocaleString("ru-RU")} ₽` : "Расчёт менеджером"}</span>`;
 }
 
 function renderOrderServices() {
@@ -875,6 +887,8 @@ async function loadCatalog() {
     const response = await fetch("/api/catalog", { headers: { "X-Telegram-Init-Data": tg?.initData || "" } });
     if (!response.ok) return;
     catalogPlans = (await response.json()).plans || [];
+    renderServices();
+    renderCatalog();
     if (serviceInput.value) configurePlanPicker(getService(serviceInput.value));
   } catch {
     catalogPlans = [];

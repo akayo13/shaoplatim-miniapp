@@ -541,18 +541,42 @@ button {
   line-height: 1.38;
 }
 
-.service-card__plan {
+.service-card__meta {
   position: absolute;
   left: 18px;
+  right: 18px;
   bottom: 16px;
   z-index: 1;
-  max-width: calc(100% - 32px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.service-card__plan {
+  min-width: 0;
   overflow: hidden;
   color: rgba(247, 248, 247, 0.46);
   font-size: 11px;
   font-weight: 900;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.service-card__price,
+.service-row__price {
+  flex: 0 0 auto;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.service-card__price--manual,
+.service-row__price--manual {
+  color: rgba(247, 248, 247, 0.42);
+  font-size: 9px;
 }
 
 .catalog-tools {
@@ -640,7 +664,7 @@ button {
 .service-row {
   position: relative;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   min-height: 74px;
@@ -714,6 +738,12 @@ button {
   color: rgba(247, 248, 247, 0.38);
   font-size: 11px;
   font-weight: 900;
+}
+
+.service-row__price {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  align-self: center;
 }
 
 .catalog-empty {
@@ -2189,6 +2219,27 @@ button {
 
   .process-list {
     grid-template-columns: 1fr;
+  }
+
+  .service-card {
+    padding-bottom: 62px;
+  }
+
+  .service-card__meta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .service-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .service-row__price {
+    grid-column: 2;
+    grid-row: 3;
+    justify-self: start;
+    margin-top: 3px;
   }
 }
 

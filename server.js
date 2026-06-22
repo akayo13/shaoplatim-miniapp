@@ -13,6 +13,7 @@ const publicDir = path.join(__dirname, "public");
 const dataDir = path.join(__dirname, "data");
 const ordersFile = path.join(dataDir, "orders.json");
 const localQuotes = new Map();
+let localRate = { value: 90, fetchedAt: 0 };
 const localPlans = [
   { id: "chatgpt-plus", service: "ChatGPT", name: "Plus — 1 месяц", usdPrice: 20 },
   { id: "chatgpt-pro", service: "ChatGPT", name: "Pro — 1 месяц", usdPrice: 200 },
@@ -79,7 +80,11 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === "GET" && url.pathname === "/api/catalog") {
-    sendJson(res, 200, { plans: localPlans, demo: true });
+    const rate = await getLocalRate();
+    sendJson(res, 200, {
+      plans: localPlans.map((plan) => ({ ...plan, amountRub: calculateRubTotal(plan.usdPrice, rate).total })),
+      demo: true,
+    });
     return;
   }
 
@@ -103,14 +108,15 @@ async function handleApi(req, res, url) {
     const plan = localPlans.find((item) => item.id === payload.planId);
     if (!plan) return sendJson(res, 404, { error: "Тариф не найден" });
     const now = new Date();
-    const totals = calculateRubTotal(plan.usdPrice, 90);
+    const rate = await getLocalRate();
+    const totals = calculateRubTotal(plan.usdPrice, rate);
     const quote = {
       id: `quote_${crypto.randomUUID()}`,
       planId: plan.id,
       service: plan.service,
       plan: plan.name,
       usdPrice: plan.usdPrice,
-      usdtRubRate: 90,
+      usdtRubRate: rate,
       bufferedRate: totals.bufferedRate,
       subtotalRub: totals.subtotal,
       amountRub: totals.total,
@@ -190,6 +196,18 @@ async function handleApi(req, res, url) {
   }
 
   sendJson(res, 404, { error: "Not found" });
+}
+
+async function getLocalRate() {
+  if (Date.now() - localRate.fetchedAt < 8 * 60 * 60 * 1000) return localRate.value;
+  try {
+    const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=rub", { signal: AbortSignal.timeout(3000) });
+    const value = Number((await response.json()).tether?.rub);
+    if (response.ok && Number.isFinite(value) && value > 0) localRate = { value, fetchedAt: Date.now() };
+  } catch (error) {
+    console.error("Local rate refresh failed", error.message);
+  }
+  return localRate.value;
 }
 
 function serveStatic(req, res, url) {

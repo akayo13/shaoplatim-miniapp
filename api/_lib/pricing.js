@@ -14,6 +14,13 @@ function calculateRubTotal(usdPrice, usdtRubRate) {
   return { bufferedRate, subtotal, total };
 }
 
+function getMinimumRubPrice(plans, service) {
+  const prices = plans
+    .filter((plan) => plan.service === service && Number.isFinite(plan.amountRub))
+    .map((plan) => plan.amountRub);
+  return prices.length ? Math.min(...prices) : null;
+}
+
 function isRateFresh(updatedAt, now = new Date()) {
   return ageMs(updatedAt, now) < RATE_FRESH_MS;
 }
@@ -55,6 +62,7 @@ function roundMoney(value) {
 module.exports = {
   calculateRubTotal,
   createId,
+  getMinimumRubPrice,
   isQuoteValid,
   isRateFresh,
   isRateUsable,
