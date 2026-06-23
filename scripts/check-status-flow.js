@@ -36,9 +36,14 @@ assert.match(app, /amountRub: order\.amountRub/);
 assert.match(app, /paymentAmount\.textContent = order\.amountRub/);
 assert.match(app, /start_param/);
 assert.match(app, /function openStartOrder[\s\S]*renderPaymentDraft\(order\);\s*showView\("payment"\)/);
-assert.match(app, /paymentPrimaryButton\.hidden = !isPaymentReady/);
+assert.match(app, /paymentPrimaryButton\.hidden = !canOpenPayment/);
+assert.match(app, /paymentDetails: order\.paymentDetails/);
+assert.match(app, /paymentDetailsBox\.textContent = order\.paymentDetails/);
+assert.match(app, /isPaymentUrl\(selectedPaymentOrder\.paymentDetails\)/);
 assert.match(admin, /window\.confirm/);
-assert.match(admin, /JSON\.stringify\(\{ status \}\)/);
-assert.match(admin, /JSON\.stringify\(\{ managerComment \}\)/);
+assert.match(admin, /data-payment-details/);
+assert.match(admin, /JSON\.stringify\(\{ managerComment, paymentDetails \}\)/);
+assert.match(admin, /JSON\.stringify\(\{ status, managerComment, paymentDetails \}\)/);
+assert.match(orderApi, /paymentDetails/);
 
 console.log("Status flow check passed");

@@ -188,6 +188,9 @@ async function handleApi(req, res, url) {
     if (typeof payload.managerComment === "string") {
       order.managerComment = payload.managerComment.trim();
     }
+    if (typeof payload.paymentDetails === "string") {
+      order.paymentDetails = payload.paymentDetails.trim().slice(0, 1000);
+    }
 
     order.updatedAt = new Date().toISOString();
     writeOrders(orders);
@@ -248,6 +251,7 @@ function createOrder(payload) {
     quote: payload.quote || "Расчет перед оплатой",
     status: "new",
     managerComment: "",
+    paymentDetails: "",
     customer: normalizeCustomer(payload.customer),
     createdAt: now,
     updatedAt: now,

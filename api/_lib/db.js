@@ -39,7 +39,8 @@ async function ensureSchema() {
       ADD COLUMN IF NOT EXISTS buffered_rate NUMERIC,
       ADD COLUMN IF NOT EXISTS subtotal_rub NUMERIC,
       ADD COLUMN IF NOT EXISTS amount_rub INTEGER,
-      ADD COLUMN IF NOT EXISTS priced_at TIMESTAMPTZ
+      ADD COLUMN IF NOT EXISTS priced_at TIMESTAMPTZ,
+      ADD COLUMN IF NOT EXISTS payment_details TEXT NOT NULL DEFAULT ''
   `;
 }
 
@@ -64,6 +65,7 @@ function mapOrder(row) {
     subtotalRub: row.subtotal_rub == null ? null : Number(row.subtotal_rub),
     amountRub: row.amount_rub == null ? null : Number(row.amount_rub),
     pricedAt: row.priced_at || null,
+    paymentDetails: row.payment_details || "",
   };
 }
 
@@ -123,12 +125,17 @@ async function updateOrder(id, updates) {
     typeof updates.managerComment === "string"
       ? updates.managerComment.trim()
       : existing.managerComment;
+  const nextPaymentDetails =
+    typeof updates.paymentDetails === "string"
+      ? updates.paymentDetails.trim().slice(0, 1000)
+      : existing.paymentDetails;
 
   const rows = await getSql()`
     UPDATE orders
     SET
       status = ${nextStatus},
       manager_comment = ${nextManagerComment},
+      payment_details = ${nextPaymentDetails},
       updated_at = NOW()
     WHERE id = ${id}
     RETURNING *

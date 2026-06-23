@@ -28,6 +28,10 @@ module.exports = async function handler(req, res) {
       sendJson(res, 400, { error: "Unknown status" });
       return;
     }
+    if (payload.paymentDetails != null && (typeof payload.paymentDetails !== "string" || payload.paymentDetails.length > 1000)) {
+      sendJson(res, 400, { error: "Payment details must be 1000 characters or fewer" });
+      return;
+    }
 
     const existing = await getOrder(id);
     if (!existing) {

@@ -218,6 +218,7 @@ const paymentAmount = document.querySelector("#paymentAmount");
 const paymentTitle = document.querySelector("#paymentTitle");
 const paymentSubtitle = document.querySelector("#paymentSubtitle");
 const paymentNotice = document.querySelector(".payment-card__notice");
+const paymentDetailsBox = document.querySelector("#paymentDetailsBox");
 const paymentPrimaryButton = document.querySelector("#paymentPrimaryButton");
 const paymentBackButton = document.querySelector("#paymentBackButton");
 const profileSupportButton = document.querySelector("#profileSupportButton");
@@ -465,14 +466,20 @@ function renderOrderSuccess(order) {
 
 function renderPaymentDraft(order) {
   const isPaymentReady = order.status === "waiting_payment";
+  const canOpenPayment = isPaymentReady && isPaymentUrl(order.paymentDetails);
   selectedPaymentOrder = order;
   paymentTitle.textContent = statusLabels[order.status] || "Заказ";
   paymentSubtitle.textContent = getNextStepText(order.status);
   paymentOrderId.textContent = `#${formatOrderId(order.id)}`;
   paymentService.textContent = `${order.service} · ${order.plan}`;
   paymentAmount.textContent = order.amountRub ? formatMoney(order.amountRub) : "Сумма появится после расчета";
-  paymentPrimaryButton.hidden = !isPaymentReady;
+  paymentDetailsBox.textContent = order.paymentDetails || "Реквизиты появятся здесь после расчета.";
+  paymentPrimaryButton.hidden = !canOpenPayment;
   paymentNotice.hidden = !isPaymentReady;
+}
+
+function isPaymentUrl(value) {
+  return /^https?:\/\/\S+$/i.test(String(value || "").trim());
 }
 
 function getTimelineTone(status) {
@@ -527,6 +534,7 @@ function normalizeHistoryOrder(order) {
     comment: order.comment || "",
     status: order.status || "new",
     amountRub: order.amountRub == null ? null : Number(order.amountRub),
+    paymentDetails: order.paymentDetails || "",
     createdAt: order.createdAt || new Date().toISOString(),
     updatedAt: order.updatedAt || order.createdAt || new Date().toISOString(),
   };
@@ -851,7 +859,9 @@ timeline.addEventListener("click", (event) => {
 
 paymentPrimaryButton.addEventListener("click", () => {
   if (!selectedPaymentOrder) return;
-  showToast("Эквайринг подключим на следующем этапе.");
+  if (isPaymentUrl(selectedPaymentOrder.paymentDetails)) {
+    window.open(selectedPaymentOrder.paymentDetails, "_blank", "noopener");
+  }
 });
 
 paymentBackButton.addEventListener("click", () => showView("history"));

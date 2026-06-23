@@ -189,6 +189,11 @@ function renderOrderCard(order) {
         <textarea rows="2" data-manager-comment>${escapeHtml(order.managerComment || "")}</textarea>
       </label>
 
+      <label class="field">
+        <span>Ссылка или реквизиты оплаты</span>
+        <textarea rows="2" data-payment-details placeholder="https://... или короткие реквизиты">${escapeHtml(order.paymentDetails || "")}</textarea>
+      </label>
+
       <div class="admin-status-flow" aria-label="Этапы заказа">
         ${statusFlow
           .map(
@@ -218,6 +223,7 @@ function getFlowButtonClass(currentStatus, status) {
 async function saveManagerComment(card) {
   const id = card.dataset.orderId;
   const managerComment = card.querySelector("[data-manager-comment]").value;
+  const paymentDetails = card.querySelector("[data-payment-details]").value;
 
   try {
     const response = await fetch(`/api/orders/${id}`, {
@@ -226,7 +232,7 @@ async function saveManagerComment(card) {
         "Content-Type": "application/json",
         ...getAdminHeaders(),
       },
-      body: JSON.stringify({ managerComment }),
+      body: JSON.stringify({ managerComment, paymentDetails }),
     });
 
     if (!response.ok) throw new Error("Не удалось сохранить заявку");
@@ -242,6 +248,8 @@ async function saveStatus(card, status) {
   if (status === "declined" && !window.confirm("Отклонить эту заявку?")) return;
 
   const buttons = card.querySelectorAll("[data-set-status]");
+  const managerComment = card.querySelector("[data-manager-comment]").value;
+  const paymentDetails = card.querySelector("[data-payment-details]").value;
   buttons.forEach((button) => { button.disabled = true; });
 
   try {
@@ -251,7 +259,7 @@ async function saveStatus(card, status) {
         "Content-Type": "application/json",
         ...getAdminHeaders(),
       },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status, managerComment, paymentDetails }),
     });
     if (!response.ok) throw new Error("Не удалось изменить статус");
 
